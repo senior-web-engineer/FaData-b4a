@@ -1,0 +1,81 @@
+- Fahrtbezeichnung 	FaKurzBz	als String
+- Klasse		KlaNr 		als Int
+- Fahrzeug		einFzg		als Int
+- Begleitfahrzeug	einFzg2		als Int
+
+
+Verschlüsselung:
+- Datum			einDatum	als String
+- Uhrzeit		einUhrZt	als String
+- Menge			einMenge	als String
+- Fahrbezeichnung	einFahrtBez 	als String	(= FaBezNr)
+- Fahrlehrer		einFahrl	als String
+- Klasse		einKla		als Int		(= KlaNr)
+
+
+
+
+Termin vormerken:
+Kennzeichen 'T'
+
+---------------------------------------------------
+
+Sub Panel1_Touch (Action As Int, X As Float, Y As Float)
+	SignatureCapture.Panel_Touch(SD, x, y, Action)
+	If SignPt < SignPoints.Length -1 Then
+		SignPoints(signPt).x = x
+		SignPoints(signPt).y = y
+		SignPt = SignPt + 1
+	End If
+End Sub
+---------------------------------------------------
+
+Function SignatureToString()
+' This routine saves the signature path to string.
+  If s = 0 Then
+    SignatureToString = ""
+    Exit Function
+  End If
+ 
+  Dim i As Integer
+  Dim X As Integer
+  Dim Y As Integer
+  Dim sPath As String
+ 
+  's = Zahl der Bildpunkte / spots
+  For i = 1 To s
+    X = savX(i)
+    Y = savY(i)
+    If X < 0 Or Y < 0 Then
+        'Stift ist außerhalb des Unterschriftfeldes an-/abgesetzt
+        X = 0
+        Y = 0
+    Else
+        If X > 220 Or Y > 60 Then
+            'Stift ist außerhalb des Unterschriftfeldes an-/abgesetzt
+            X = 0
+            Y = 0
+        End If
+    End If
+   
+   
+    If X < 59 Then          '0-58
+        X = X + 68
+    ElseIf X < 93 Then      '59-92
+        X = X + 101
+    ElseIf X < 127 Then     '93-126
+        X = X - 59
+    ElseIf X < 160 Then     '127-159
+        X = X - 126
+    Else                    '160-220
+        X = X + 34
+    End If
+   
+    Y = Y + 161
+   
+    sPath = sPath & Chr(X) & Chr(Y)
+  Next
+
+  SignatureToString = sPath
+ 
+End Function

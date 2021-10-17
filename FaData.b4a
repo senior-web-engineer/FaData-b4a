@@ -1,0 +1,3594 @@
+﻿Build1=Default,fadata.mobil
+File1=ausbildungbvf_tab.bal
+File10=ic_tab_einstellungen.png
+File11=ic_tab_fahrstunden.png
+File12=ic_tab_kontrolle.png
+File13=ic_tab_stammdaten.png
+File14=ic_tab_termine.png
+File15=ic_tab_zahlungen.png
+File16=kalender.bal
+File17=list_Begleitfahrzeug.bal
+File18=list_fahrlehrer.bal
+File19=list_fahrtbezeichnung.bal
+File2=ausbildungskontrolle_tab.bal
+File20=list_kfz.bal
+File21=list_klassen.bal
+File22=list_schueler.bal
+File23=list_schueler_klasse.bal
+File24=list_sonstigetaetigkeiten.bal
+File25=list_treffpunkt.bal
+File26=list_zahlungenfuer.bal
+File27=pruefergebnis.bal
+File28=stammdaten_tab.bal
+File29=start_tab.bal
+File3=einstellung_tab.bal
+File30=startpage.bal
+File31=Zahlungen_tab.bal
+File4=FaData2012.db
+File5=fahrdaten_tab.bal
+File6=ic_dialog_information.ico
+File7=ic_laucher.png
+File8=ic_menu_less.png
+File9=ic_menu_more.png
+FileGroup1=Default Group
+FileGroup10=Default Group
+FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup13=Default Group
+FileGroup14=Default Group
+FileGroup15=Default Group
+FileGroup16=Default Group
+FileGroup17=Default Group
+FileGroup18=Default Group
+FileGroup19=Default Group
+FileGroup2=Default Group
+FileGroup20=Default Group
+FileGroup21=Default Group
+FileGroup22=Default Group
+FileGroup23=Default Group
+FileGroup24=Default Group
+FileGroup25=Default Group
+FileGroup26=Default Group
+FileGroup27=Default Group
+FileGroup28=Default Group
+FileGroup29=Default Group
+FileGroup3=Default Group
+FileGroup30=Default Group
+FileGroup31=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+FileGroup9=Default Group
+Group=Default Group
+Library1=core
+Library2=phone
+Library3=sql
+Library4=stringutils
+Library5=stringfunctions
+Library6=runtimepermissions
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.basic4ppc.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="29"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true"~\n~	android:xlargeScreens="true"~\n~    android:smallScreens="true"~\n~    android:anyDensity="true"/>~\n~<uses-feature android:name="android.hardware.telephony" android:required="false"/>~\n~<uses-feature android:name="android.hardware.camera" android:required="false"/>~\n~<uses-feature android:name="android.hardware.camera.front" android:required="false"/>~\n~<uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>~\n~<uses-feature android:name="android.hardware.camera.flash" android:required="false"/>~\n~<uses-feature android:name="android.hardware.wifi" android:required="false"/>~\n~<uses-feature android:name="android.hardware.touchscreen" android:required="false"/>~\n~<uses-permission ~\n~	android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>~\n~	android:maxSdkVersion="19")~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
+Module1=Begleitfahrzeuge
+Module10=ReadWriteINI
+Module11=Schueler
+Module12=SchuelerKlasse
+Module13=SignatureCapture
+Module14=SonstigeTaetigkeiten
+Module15=Treffpunkt
+Module16=ZahlungenFuer
+Module2=DBUtils
+Module3=Fahrlehrer
+Module4=Fahrtbezeichnung
+Module5=Helper
+Module6=Kalender
+Module7=KFZ
+Module8=Klassen
+Module9=Pruefergebnis
+NumberOfFiles=31
+NumberOfLibraries=6
+NumberOfModules=16
+Version=10.7
+@EndOfDesignText@
+#Region Module Attributes
+	#FullScreen: False
+	#IncludeTitle: True
+	#ApplicationLabel: FADATA Mobil
+	#VersionCode: 72
+	#VersionName: 1.3.0
+	#SupportedOrientations: unspecified
+	#SupportedOrientations: portrait 
+#End Region
+
+#Region Variablen Globals
+'Activity module
+Sub Process_Globals
+	'fixe Variablen
+	Public VersionsNummer As String
+	VersionsNummer = "V1.0"
+	
+	Public pm As PackageManager
+	
+	Public rp As RuntimePermissions
+	Public SourceFolder As String
+	
+	
+	Public lv As LayoutValues 															'Layoutwerte
+	Public sAusgewaehlterSchueler, aSchueler(0,0), aFahrtbezeichnung(0,0), _
+		aSonstigeTaetigkeiten(0,0), aTreffpunkt(0,0), aKFZ(0,0) As String
+	Public iAusgewaehlterSchuelrID As Int
+	
+	Public bDatenVorhanden, bTreffpunktAuswahl, bFirstTime, bZahlBearbeiten, _
+		bZahlDatum, bIsSelected(10), bSonstTaetigkeit, bAlleKlassen, bKFZmanuel As Boolean
+	Public iZahlungsPosition, iAusbildungBereich As Int
+	
+	Public sFahrlehrer As String
+	
+	Public SQL1 As SQL															'zum Speichern der Unterschriften 
+	
+	'Typen-Definition
+	Type ListViewData (FirstRow As String, SecondRow As String)
+	
+End Sub
+
+Sub Globals
+	'allgemeine Definitionen und Variablen
+	DateTime.DateFormat = "dd.MM.yyyy"
+	DateTime.TimeFormat = "HH:mm"
+	
+	'Bilder laden
+	Dim termin, fahrstunden, stammdaten, zahlungen, lernkontrolle, config, info As Bitmap
+	termin = LoadBitmap(File.DirAssets, "ic_tab_termine.png")
+	fahrstunden = LoadBitmap(File.DirAssets, "ic_tab_fahrstunden.png")
+	stammdaten = LoadBitmap(File.DirAssets, "ic_tab_stammdaten.png")
+	zahlungen = LoadBitmap(File.DirAssets, "ic_tab_zahlungen.png")
+	lernkontrolle = LoadBitmap(File.DirAssets, "ic_tab_kontrolle.png")
+	config = LoadBitmap(File.DirAssets, "ic_tab_einstellungen.png")
+	info = LoadBitmap(File.DirAssets, "ic_dialog_information.ico")
+	
+	'Startpage
+	Dim thStart As TabHost
+	
+	'Start_Tab
+	Dim btKalender, btTagZurueck, btTagVor As Button
+	Dim lblFahrlehrer, lblSchueler, lblAuswahlFahrlehrer, lblAuswahlSchueler, lblFahrStd, lblAnzeigeFahrStd, lblGesamtStd, lblAnzeigeGesamtStd As Label
+	'Dim txtFahrlehrer, txtSchueler As EditText
+	Dim iTerminID As Int
+			
+	'Listviews
+	Dim lstSchueler, lstFahrlehrer, lstKfz, lstTermine, lstSchuelerKlasse, lstKlassen, lstFahrtbezeichnung, lstTreffpunkt, lstBegleitfahrzeug, _
+		lstZahlungFuer, lstZahlungen, lstSonstigeTaetigkeiten As ListView
+	
+	'Fahrdaten_Tab
+	Dim lblAbfahrt, lblEinheit, lblKlasse, lblKfz, lblFahrtbezeichnung, lblAuswahlKlasse, lblAuswahlKlasseAlle, lblAuswahlKfz, lblAuswahlFahrbezeichnung, lblTreffpunkt As Label
+	Dim lblStdPlus, lblStdMinus, lblMinPlus, lblMinMinus, lblMin1Plus, lblMin1Minus, lblEinheitPlus, lblEinheitMinus, lblBegleitfahrzeug, _
+		lblAuswahlBegleitfahrzeug, lblEinheit5Plus, lblEinheit5Minus, lblEinheit1Plus, lblEinheit1Minus, lblAnzSchueler, lblAnzDatum As Label
+	Dim lblAbfahrtAnzeige, lblEinheitAnzeige, lblPfeil, lblSonder, lblPruefungsergebnisse As Label
+	Dim txtAuswahlTreffpunkt As EditText
+	Dim panStart, panUnterschrift, panPruefung As Panel
+	Dim btVormerken, btAbbruch, btSpeichern, btUnterschrift, btPruefErgebnisOK As Button
+	Dim sFahrtenbezeichnung As String
+	Dim rbNichtErfassen, rbNichtBestanden, rbBestanden As RadioButton
+	
+	'Stammdaten_Tab
+	Dim panStammdaten1, panStammdaten2, panKlassen, panKlasse1, panKlasse2, panKlasse3, panKlasse4 As Panel
+	Dim lblStammdaten1, lblStammdaten2, lblKlasse1, lblKlasse2, lblKlasse3, lblKlasse4 As Label
+	Dim lblStammdatenName, lblStammdatenOrt, lblStammdatenAnschrift, lblStammdatenTelefon, lblStammTelefon, _
+		lblStammdatenHandy, lblStammHandy, lblStammdatenArbeitsstelle, lblStammArbeitsstelle, _
+		lblStammdatenTelefonArbeit, lblStammTelefonArbeit, lblStammdatenKlassen, lblStammKlassen, _
+		lblStammdatenHatKlasse, lblStammHatKlasse, lblStammdatenEmail, lblStammEmail As Label
+	Dim lblStammdatenKontostand, lblStammdatenAntragEingereicht, lblStammdatenAntragZurueck, lblStammdatenGeburtstag, _
+		lblStammdatenNationalitaet, lblStammdatenSchuleFiliale, lblStammdatenAnmeldung, lblStammKontostand, _
+		lblStammAntragEingereicht, lblStammAntragZurueck, lblStammGeburtstag, lblStammNationalitaet, _
+		lblStammAnmeldung, lblStammSchuleFiliale As Label
+	Dim lblNameKlasse, lblKlasseGrundstoff, lblKlasseDoppelstunde, lblKlassenbezeichnung, lblKlasseSpezifisch, _
+		lblKlasseUebungsfahrt, lblKlasseUebungGrund, lblKlasseUeberland, lblKlasseAutobahn, lblKlasseNachtfaht, _
+		lblKlasseUnterweisungFhrzg, lblKlasseTheorPruefung, lblKlassePraktischePruefung, lblKlasseAusbildungsstand As Label 
+	Dim	lblKlasseAnzeigeGrundstoff, lblKlasseAnzeigeDoppelstunde, lblKlasseAnzeigeBezeichnung, lblKlasseAnzeigeSpezifisch, _
+		lblKlasseAnzeigeUebungsfahrt, lblKlasseAnzeigeUebungGrund, lblKlasseAnzeigeUeberland, lblKlasseAnzeigeAutobahn, lblKlasseAnzeigeNachtfaht, _
+		lblKlasseAnzeigeUnterweisungFhrzg, lblKlasseAnzeigeTheorPruefung, lblKlasseAnzeigePraktischePruefung, lblKlasseDoppelstundeText, lblStdJe45Min As Label
+	
+	'Zahlungen
+	Dim lblZahlDatum, lblZahlTag, lblZahlAlle, lblZahlSchueler, lblZahlGesamtBetrag, lblZahlZahlungFuerText, lblZahlZahlungstext, _
+		lblZahlAuswahlZahlungenFuer, lblZahlZeileBearbeiten, lblZahlSpeichern As Label
+	Dim txtZahlBetrag As EditText
+	Dim panAuswahl, panZahlListe As Panel
+	
+	'Ausbildungsstand
+	Dim lblAusbildungSchueler, lblAusbildung0, lblAusbildung1, lblAusbildung2, lblAusbildung3, lblAusbildung4, lblAusbildung5, lblAusbildung6, _
+		lblAusbildungPlus, lblAusbildungMinus, lblAusbildungZahl0, lblAusbildungZahl1, lblAusbildungZahl2,lblAusbildungZahl3, lblAusbildungZahl4, _
+		lblAusbildungZahl5, lblAusbildungZahl6, lblAusbildungZahlX, lblAusbildungZahlMinus, lblAusbildungZahlPlus, lblAusbildungZahlAusrufe, _
+		lblAusbildungZahlDel As Label
+	Dim lblAusbildungListeZeile1, lblAusbildungListeZeile2, lblAusbildungListeZeile3, lblAusbildungListeZeile4, lblAusbildungListeZeile5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZeile7, lblAusbildungListeZeile8, lblAusbildungListeZeile9, lblAusbildungListeZeile10 As Label
+	Dim lblAusbildungListeZusatz1, lblAusbildungListeZusatz2, lblAusbildungListeZusatz3, lblAusbildungListeZusatz4, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZusatz6, lblAusbildungListeZusatz7, lblAusbildungListeZusatz8, lblAusbildungListeZusatz9, lblAusbildungListeZusatz10 As Label
+	Dim panAusbildung As Panel
+	Dim lstAusbildungLernThemen, lstAusbildungLernPunkte As ListView
+	
+	'Ausbildungs BVF
+	Dim lblSchuelerBVF, lblGrundstufe, lblAusbildungBVF0, lblAusbildungBVF1, lblAusbildungBVF2, lblAusbildungBVF3, lblAusbildungBVF4, lblAusbildungBVF5, lblAusbildungBVF6, lblDaemmerung, _
+		lblChecklisteFahrvorb, lblHeizungLueftung, lblBetriebsVerkehrssich As Label
+	Dim cbBesonderhEinsteigen, cbEinstellen, cbLenkrad, cbSpiegel, cbKopfstuetze, cbSitz, cbLenkradhaltung, cbPedale, cbGurt, cbSchaltWaehlhebel, cbZuendschloss, cbMotorAnlassen, _
+		cbAnfahrAnhalte, cbSchaltuebg, cbHoch1_2, cbHoch2_3, cbHoch3_4, cbRunter4_3, cbRunter3_2, cbRunter2_1, cbRunter4_2, cbRunter4_1, cbRunter3_1, cbLenkuebung, cbUmkehren, cbEinparkenLaengs, _
+		cbLVorwaertsRechts, cbLRueckwaertsLinks, cbLRueckwaertsRechts, cbLVorwaertsLinks, cbRueckwaertsfahren, cbEinparkenQuer, cbQVorwaertsRechts, cbQRueckwaertsLinks, _
+		cbQRueckwaertsRechts, cbQVorwaertsLinks, cbGefahrbremsung, cbRollenSchalten, cbBremsSchalten, cbBremsuebung, cbDegressiv, cbZielbremsung, cbGefahrsituation, cbGefaelle, _
+		cbAnhalten, cbAnfahren, cbRueckwaerts, cbSichern, cbSchalten, cbSteigung, cbStAnhalten, cbStAnfahren, cbStRueckwaerts, cbStSichern, cbStSchalten, cbTastgeschw, cbBedienKontroll, _
+		cbOertlichBesonder, cbFahrbahnbenutzung, cbEinordnen, cbMarkierungen, cbFahrstreifenwechsel, cbLinks, cbRechts, cbVorbeifUeberholen, cbAbbiegen, cbABRechts, cbABLinks, cbMehrspurig, _
+		cbRadweg, cbSonderstreifen, cbStrassenbahn, cbEinbahnstrasse, cbVorfahrt, cbRechtsVorLinks, cbGruenpfeil, cbPolizeibeamte, cbGruenpfeilSchild, cbGeschwAbstand, cbSituationVerkehrstn, _
+		cbFussgaengerueberweg, cbOeffentlVerkehrsm, cbAeltereBehinderte, cbEinbahnstrRadfahrer, cbKinder, cbSchulbus, cbRadfahrerMofa, cbVerkehrsberuhigt, cbSchwierigeVerkehrsf, cbEngpass, _
+		cbKreisverkehr, cbBahnuebergangWarte, cbKritischeVerkehrss, cbHauptverkehrszt, cbPartnerVerhalten, cbSchwungNutzen, cbFussgaengerSchutzb, cbAngepassteGeschw, cbAbstand, cbULVorne, _
+		cbULHinten, cbULSeitlich, cbBeobachtSpiegel, cbVerkehrszeichen, cbKreuzungEinmuend, cbKurven, cbSteigungen, cbULGefaelle, cbAlleen, cbUeberholen, cbBesondereSituat, cbLiegenblSichern, _
+		cbEinfahrenOrtsch, cbFussgaenger, cbWildTiere, cbBesondereAnford, cbLeistungsgrenze, cbOrientierung, cbAblenkung, cbFahrtplanung, cbEinfahrtAB, cbABFahrbahnwechsel, cbGeschwindigkeit, _
+		cbABAbstand, cbABVorne, cbABHinten, cbABSeitlich, cbABUeberholen, cbSchilder, cbVorbeifahren, cbRastParkTank, cbVerhUnfall, cbDichterVerkehr, cbBesonderSituat, cbBesonderAnford, _
+		cbABLeistungsgrenze, cbKonfliktSitua, cbABAblenkung, cbBeleuchtung, cbKontrolle, cbEinstell, cbBenutzung, cbFernlicht, cbVerlassenBAB, cbBeleuchtStrasse, cbUnbeleuchtStrasse, cbParken, cbDUBesonderSituat, _
+		cbSchlechteWitterung, cbTiere, cbBahnuebergaenge, cbUnbelVerkehrTN, cbDUBesonderAnfor, cbBlendung, cbDUOrientierung, cbAbschlussbesp, cbSelbstFahren, cbInnerorts, cbAusserorts, cbVerantwFahren, cbTestfPruef, _
+		cbFAKT, cbAndere, cbWiederholung, cbLeistungsbew, cbReifen, cbEinAusschalten, cbFunktionPruefen, cbStandlicht, cbNebelschluss, cbBlinker, cbAbblendlicht, cbWarnblicke, cbHupe, cbBSFernlicht, cbSchlussLeuchte, _
+		cbBremslicht, cbKontrollLBenenn, cbRueckstrahler, cbVorhandensein, cbBeschaedigung, cbLenkung, cbLenkschlEntriegeln, cbPruefLenkSpiel, cbFunktBremse, cbBetriebsBremse, cbFeststellBremse, _
+		cbAnlegenGurt, cbRichtigSitz, cbEinstellRueckspiegel, cbEinKopfstuetze, cbEinLenkrad, cbBedienenAgg, cbHeizung, cbHeckHeizung, cbBehSonderaus, cbLueftung, cbKlimaanlage, cbEnergieNutzung, _
+		cbKeineUnnVerbr, cbRechtztAbsch, cbMotorraum, cbMotoroel, cbKuehlmittel, cbScheibenwaschm, cbTanken, cbBremsen, cbSicherungsmittel, cbWarndreieck, cbBordwerkzeug, cbZusaetzlichAus, cbVerbandskasten, cbAussenkontrolle, _
+		cbScheibenWischer, cbKennzeichen, cbCheckSpiegel, cbCheckBeleuchtung, cbLadung, cbLadungssicherung, cbKenntlichmachung, cbFahreSchlWitt, cbWittLueftung, cbWittScheiben, cbRegen, _
+		cbWasserlachen, cbWindSturm, cbMatchSchnee, cbEis, cbWittBeleuchtung As CheckBox
+	Dim pan0, pan1, pan2, pan3, pan4, pan5, pan6, pan7, pan8, pan9, pan10, pan11, pan12, pan13, pan14, pan15, pan16, pan17, pan18, pan19, pan20 As Panel
+	Dim etNotizen As EditText
+	
+	
+	'Einstellung_Tab
+	Dim lblEinstFahrlehrer, lblEinstAnzeigeFahrlehrer, lblEinstKfz, lblEinstAnzeigeKfz, lblEinstFahrEinheit, lblBegleitfahrzeugErfassen, _
+		lblPruefungErgebnis, lblEinstellTreffpunkt, lblBVFKontrolle As Label
+	Dim panEinstellAuswahl As Panel
+	Dim txtNeuerTreffpunkt As AutoCompleteEditText
+	Dim txtEinstAnzeigeFahrEinheit As EditText
+	Dim btEinstellAktuelleListe, btEinstellSpeichern, btAppBeenden As Button
+	Dim cbBegleitfahrzueg, cbPruefungsErgebnis, cbBVFKontrolle As CheckBox
+	Dim aKonfig() As Boolean
+	
+	'Unterschrift
+	Dim btUnterschrfitSpeichern, btUnterschriftLoeschen, btUnterschriftAbbruch As Button
+	Dim panUnterschriftFeld As Panel
+	Dim canvas1 As Canvas
+	Dim sigD As SignatureData
+End Sub
+#End Region
+
+#Region App Grundfunktionen
+Sub Activity_Create(FirstTime As Boolean)
+	
+	If (FirstTime) Then
+		
+		Dim p As Phone
+		ToastMessageShow("SDK Version: = " & p.SdkVersion, True)
+		
+		If p.SdkVersion < 23 Then
+			SourceFolder = File.DirDefaultExternal
+		Else
+			SourceFolder = rp.GetSafeDirDefaultExternal("")
+		End If
+		
+		Try
+			If File.Exists(SourceFolder, "FaData2012.db") = False Then
+				File.Copy(File.DirAssets, "FaData2012.db", SourceFolder, "FaData2012.db")
+			End If
+			If SQL1.IsInitialized = False Then
+				SQL1.Initialize(SourceFolder, "FaData2012.db", True)
+				SQL1.ExecQuery("PRAGMA journal_mode=DELETE")
+			End If
+		Catch
+			Msgbox2Async("Keine Datenbank vorhanden", "Fehler - keine Datenbank gefunden", "OK", "", "", info, False)
+			Wait For Msgbox_Result (iResult As Int)
+			
+			If iResult = DialogResponse.POSITIVE Then
+				Activity.Finish()
+				ExitApplication()
+			End If
+		End Try
+	End If
+	
+	If (FirstTime = False) Then
+		Helper.DBinBenutzung(True)
+	End If
+		
+	'Versionsüberprüfung
+	If (Helper.CheckVersion()) Then
+		'Prüfung, ob Daten im System vorhanden sind - wenn keine Daten, dann Programmhinweis und beenden
+		If (Helper.CheckDatenInDB()) Then
+			'Datenbank in Benutzung -> vermerken in DB
+			Helper.DBinBenutzung(True)
+			Helper.FehlendeZuordnungenFuellenNachTransport()
+			Helper.KorrigierenDerVorhandenenFahrdaten()			'Change 23.11.2013: zum korrigieren fehlhafter Einträge
+			Helper.KorrigierenDerFehlerhaftenMatchCodes()
+			Helper.LadenFixerTreffpunkte()
+			
+			'Nach Übertragung von FADATA muss erster Fahrlehrer und erstes Fahrzeug gesetzt werden -> Felder 'IsSelected' werden bei der Übertragung nicht gesetzt
+			Helper.SetFixenFahrlehrerFahrzeug
+			
+			lv = GetDeviceLayoutValues
+			If (lv.Scale = 1.3312500715255737) Then
+				lv.Scale = 1.0
+			End If
+			
+			Activity.LoadLayout("Startpage")
+			Activity.Title = Activity.Title & TAB & " (" & pm.GetVersionName("fadata.mobil") & ")"
+			
+			Log("Größenlayout Höhe: " & lv.Height)
+			Log("           Breite: " & lv.Width)
+			Log("            Scale: " & lv.Scale)
+			Log("       ScreenSize: " & lv.toString)			
+			
+			
+			thStart.Height = lv.Height
+			thStart.Width = lv.Width
+			thStart.Color = Colors.Transparent
+			
+			'zur Definition von wo aus gekommen wird -> Termin bearbeiten/modifizieren oder Termin neu anlegen
+			bDatenVorhanden = False
+			bTreffpunktAuswahl = False
+			bZahlBearbeiten = False
+			bZahlDatum = False
+			bAlleKlassen = False
+			bKFZmanuel = False
+			
+			'Auswahlfelder alle auf False
+			Helper.ArraybIsSelected(False)
+			iAusbildungBereich = 1
+			
+			'Konfigdatenladen
+			aKonfig = Helper.KonfigdatenLaden
+				
+			'Initialisierung sämtlicher ListViews (Auswahlfenster)
+			ListInitialisieren
+			'Tabs hinzufügen
+			AddTabs
+			'Felder bezeichnen -> aller Tabs
+			Beschriftungen
+			
+			cbBegleitfahrzueg.Checked = aKonfig(0)
+			cbPruefungsErgebnis.Checked = aKonfig(1)
+			cbBVFKontrolle.Checked = aKonfig(2)
+			
+			'Fahreinheit setzen - wenn INI-Datei vorhanden, dann diesen hinterlegten Wert verwenden
+			txtEinstAnzeigeFahrEinheit.Text = Helper.KonfigdatenFahreinheit
+			
+			'Signature Panel
+			Helper.InitialisierungSignature(canvas1, panUnterschriftFeld, sigD)
+		Else
+			Msgbox2Async("Keine Daten in der Datenbank vorhanden" & CRLF & CRLF & "Bitte zuerst Datenübertragung aus dem FaData-Hauptprogramm starten", "Fehler - keine Daten vorhanden", "OK", "", "", info, False)
+			Wait For Msgbox_Result (iResult As Int)
+			
+			If iResult = DialogResponse.POSITIVE Then
+				Activity.Finish()
+				ExitApplication()
+			End If
+		End If
+	Else
+		Msgbox2Async("Falsche Version vorhanden" & CRLF & CRLF & "Bitte wenden Sie sich an den Service von FaData", "Fehler - falsche Version", "OK", "", "", info, False)
+		Wait for Msgbox_Result (iResult As Int)
+		If iResult = DialogResponse.POSITIVE Then
+			Activity.Finish()
+			ExitApplication()
+		End If
+	End If
+End Sub
+
+Sub Activity_Resume
+	'ausgewältes Datum holen oder aktuelles Datum anzeigen
+	DateTime.DateFormat = "dd.MM.yyyy"
+	If Kalender.DaySelected > 0 Then
+		btKalender.Text = DateTime.Date(Kalender.DaySelected)
+	Else
+		If bDatenVorhanden = False And bFirstTime = False Then
+			btKalender.Text = DateTime.Date(DateTime.Now)	'"No day selected"
+		End If
+	End If
+	
+	'Fahrschüler anzeigen oder wechseln
+	If Schueler.SchuelerSelected <> 0 Then
+		lblAuswahlSchueler.Text = sAusgewaehlterSchueler
+'		sAusgewaehlterSchueler = lblAuswahlSchueler.Text
+'		iAusgewaehlterSchuelrID = aSchueler(Schueler.SchuelerSelected, 1)
+'		For i = 0 To aSchueler.Length - 1
+'			aSchueler(i, 2) = 0
+'		Next 
+'		aSchueler(Schueler.SchuelerSelected, 2) = 1
+	Else
+		If bDatenVorhanden = False Then
+			lblAuswahlSchueler.Text = aSchueler(0, 0)
+			sAusgewaehlterSchueler = lblAuswahlSchueler.Text
+			iAusgewaehlterSchuelrID = aSchueler(0, 1)
+		End If
+	End If
+	Helper.FillSchuelerKlasseListView(lstSchuelerKlasse)
+	
+	'Fahrlehrer anzeigen oder wechseln
+	If Fahrlehrer.FahrlehrerSelected > 0 Then
+'		lblEinstAnzeigeFahrlehrer.Text = lstFahrlehrer.GetItem(Fahrlehrer.FahrlehrerSelected)
+'		lblAuswahlFahrlehrer.Text = lstFahrlehrer.GetItem(Fahrlehrer.FahrlehrerSelected)
+		lblEinstAnzeigeFahrlehrer.Text = sFahrlehrer
+		lblAuswahlFahrlehrer.Text = sFahrlehrer
+	Else
+		If bDatenVorhanden = False Then
+			lblEinstAnzeigeFahrlehrer.Text = lstFahrlehrer.GetItem(0)
+			lblAuswahlFahrlehrer.Text = lstFahrlehrer.GetItem(0)
+		End If
+	End If
+	
+	'KFZs anzeigen oder wechseln
+	lblEinstAnzeigeKfz.Text = lstKfz.GetItem(KFZ.KfzSelected)
+	lblAuswahlKfz.Text = lstKfz.GetItem(KFZ.KfzSelected)
+		
+	'Klassen anzeigen oder wechseln
+	If bAlleKlassen Then
+		lblAuswahlKlasse.Text = lstKlassen.GetItem(Klassen.KlassenSelected)
+		'bAlleKlassen = False
+	Else
+		lblAuswahlKlasse.Text = lstSchuelerKlasse.GetItem(SchuelerKlasse.KlasseSelected)
+	End If
+	
+	'Fahrtbezeichnung anzeigen
+	Dim iPos As Int
+		
+	If bSonstTaetigkeit Then
+		sFahrtenbezeichnung = lstSonstigeTaetigkeiten.GetItem(SonstigeTaetigkeiten.SonstTaetigkeitSelected)
+		iPos = sFahrtenbezeichnung.IndexOf(" - ")
+		lblAuswahlFahrbezeichnung.Text = sFahrtenbezeichnung.SubString2(0, iPos)
+		
+		If lblAuswahlFahrbezeichnung.Text = "Unt" Then
+			btUnterschrift.Visible = True
+			btSpeichern.Visible = False
+		Else
+			btUnterschrift.Visible = False
+			btSpeichern.Visible = True
+		End If
+	Else
+		sFahrtenbezeichnung = lstFahrtbezeichnung.GetItem(Fahrtbezeichnung.FahrtSelected)
+		iPos = sFahrtenbezeichnung.IndexOf(" - ")
+		lblAuswahlFahrbezeichnung.Text = sFahrtenbezeichnung.SubString2(0, iPos)
+	End If
+	
+	'Treffpunkt anzeigen
+	txtAuswahlTreffpunkt.Text = lstTreffpunkt.GetItem(Treffpunkt.TreffpunktSelected)
+	
+	'Bleitfahrzeuge anzeigen -> nur wenn Klasse A ausgewählt ist
+	If Helper.CheckBegleitfahrzeug(lblAuswahlKlasse.Text) Then
+		lblAuswahlBegleitfahrzeug.Color = Colors.White
+		lblAuswahlBegleitfahrzeug.Enabled = True
+		If Begleitfahrzeuge.BegleitfahrzeugSelected > 0 Then
+			lblAuswahlBegleitfahrzeug.Text = lstBegleitfahrzeug.GetItem(Begleitfahrzeuge.BegleitfahrzeugSelected)
+		Else
+			'If bDatenVorhanden = False Then
+				lblAuswahlBegleitfahrzeug.Text = lstBegleitfahrzeug.GetItem(0)
+			'End If
+		End If
+	Else
+		lblAuswahlBegleitfahrzeug.Color = Colors.LightGray
+		lblAuswahlBegleitfahrzeug.Text = ""
+		lblAuswahlBegleitfahrzeug.Enabled = False
+	End If
+	
+	'ZahlungenFuer anzeigen
+	If ZahlungenFuer.ZahlungFuerSelected > 0 Then
+		lblZahlAuswahlZahlungenFuer.Text = lstZahlungFuer.GetItem(ZahlungenFuer.ZahlungFuerSelected)
+	Else
+		lblZahlAuswahlZahlungenFuer.Text = lstZahlungFuer.GetItem(0)
+	End If
+	
+	'Termine anzeigen
+	TermineHolen(btKalender.Text)
+	'Variable setzen, damit bei Terminauswahl nicht immer auf das aktuelle Datum verwiesen wird
+	bFirstTime = True
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	Log("Beenden: " & UserClosed)
+	Helper.DBinBenutzung(False)
+	If (UserClosed) Then
+		If SQL1.IsInitialized() Then
+			SQL1.Close()
+		End If
+	End If
+	
+	'eingestellte Konfigdaten in INI Datei speichern
+'	If Helper.SaveConfigDataToINI(lblEinstAnzeigeFahrlehrer.Text, lblEinstAnzeigeKfz.Text, txtEinstAnzeigeFahrEinheit.Text, _
+'										cbBegleitfahrzueg.Checked, cbPruefungsErgebnis.Checked, sAusgewaehlterSchueler) Then		
+'		Activity.Finish()
+'		ExitApplication()
+'	Else
+'		ToastMessageShow("Fehler beim speichern der Konfig-Daten in INI Datei!", True)
+'	End If
+End Sub
+#End Region
+
+#Region Click Events
+
+#Region Label-Klicks
+'FahrlehrerListe aufrufen
+Sub lblEinstAnzeigeFahrlehrer_Click
+	StartActivity(Fahrlehrer)
+End Sub
+
+'KfzListe aufrufen
+Sub lblEinstAnzeigeKfz_Click
+	StartActivity(KFZ)
+End Sub
+
+'Klassenauswahl aufrufen
+Sub lblAuswahlKlasse_Click
+'	bAlleKlassen = False
+	StartActivity(SchuelerKlasse)
+End Sub
+
+'Klassen aufrufen
+Sub lblAuswahlKlasseAlle_Click
+'	bAlleKlassen = True
+	StartActivity(Klassen)
+End Sub
+
+'Fahrtbezeichnung aufrufen
+Sub lblAuswahlFahrbezeichnung_Click
+	If bSonstTaetigkeit Then
+		StartActivity(SonstigeTaetigkeiten)
+	Else
+		StartActivity(Fahrtbezeichnung)
+	End If
+End Sub
+
+'ZahlungenFuer aufrufen
+Sub lblZahlAuswahlZahlungenFuer_Click
+	StartActivity(ZahlungenFuer)
+End Sub
+
+'Auswahl der Treffpunkte über Pfeil öffnen
+Sub lblPfeil_Click
+	StartActivity(Treffpunkt)
+End Sub
+
+'Begleitfahrzeugliste öffnen - aber nur wenn Klasse A ausgewählt ist
+Sub lblAuswahlBegleitfahrzeug_Click
+	If Helper.CheckBegleitfahrzeug(lblAuswahlKlasse.Text) Then
+		StartActivity(Begleitfahrzeuge)
+	End If
+End Sub
+
+'Einheiten Plus 15 Minuten
+Sub lblEinheitPlus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	lblEinheitAnzeige.Text = iEinheit + 15
+End Sub
+
+'Einheiten Minus 15 Minuten
+Sub lblEinheitMinus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	'Begrenzung auf kleinste Einheit 15 min
+	If iEinheit > 15 Then
+		lblEinheitAnzeige.Text = iEinheit - 15
+	End If
+End Sub
+
+'Einheiten Plus 5 Minuten
+Sub lblEinheit5Plus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	lblEinheitAnzeige.Text = iEinheit + 5
+End Sub
+
+'Einheiten Minus 5 minuten
+Sub lblEinheit5Minus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	'Begrenzung auf kleinste Einheit 15 min
+	If iEinheit > 15 Then
+		lblEinheitAnzeige.Text = iEinheit - 5
+	End If
+End Sub
+
+'Einheiten Plus 1 Minuten
+Sub lblEinheit1Plus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	lblEinheitAnzeige.Text = iEinheit + 1
+End Sub
+
+'Einheiten Minus 1 minuten
+Sub lblEinheit1Minus_Click
+	Dim iEinheit As Int
+	
+	iEinheit = lblEinheitAnzeige.Text
+	'Begrenzung auf kleinste Einheit 15 min
+	If iEinheit > 15 Then
+		lblEinheitAnzeige.Text = iEinheit - 1
+	End If
+End Sub
+
+'Stunden und Minuten Anzeige erhöhen
+Sub lblStdPlus_Click
+	UhrzeitAddieren(1, 0)
+End Sub
+
+'Stunden um eine Std verringern
+Sub lblStdMinus_Click
+	UhrzeitSubstrahieren(1, 0)
+End Sub
+
+'Minuten um 5 Minute erhöhen
+Sub lblMinPlus_Click
+	UhrzeitAddieren(0, 5)
+End Sub
+
+'Minuten um 5 Minute verringern
+Sub lblMinMinus_Click
+	UhrzeitSubstrahieren(0, 5)
+End Sub
+
+'Minuten um 1 Minute erhöhen
+Sub lblMin1Plus_Click
+	UhrzeitAddieren(0, 1)
+End Sub
+
+'Minuten um 1 Minute verringern
+Sub lblMin1Minus_Click
+	UhrzeitSubstrahieren(0, 1)
+End Sub
+
+'Auswahl der Fahrzeug-Liste
+Sub lblAuswahlKFZ_Click
+	bKFZmanuel = True
+	StartActivity(KFZ)
+End Sub
+
+'Zahlungen: Tageszahlungen
+Sub lblZahlTag_Click
+	bZahlDatum = False
+
+	lblZahlTag.Color = Colors.ARGB(255, 144, 238, 144) 	'lightgreen
+	lblZahlAlle.Color = Colors.ARGB(255, 211, 211, 211)	'lightgray
+	
+	ZahlungenHolen(False)
+End Sub
+
+'Zahlungen: Gesamtzahlungen
+Sub lblZahlAlle_Click
+	bZahlDatum = True
+
+	lblZahlAlle.Color = Colors.ARGB(255, 144, 238, 144)	'lightgreen
+	lblZahlTag.Color = Colors.ARGB(255, 211, 211, 211)	'lightgray
+	
+	ZahlungenHolen(True)
+End Sub
+
+'Zahlungen: Zeile ändern/modifizieren
+Sub lblZahlZeileBearbeiten_Click
+	If bZahlBearbeiten = False Then
+		bZahlBearbeiten = True
+		lblZahlZeileBearbeiten.Color = Colors.Red
+	Else
+		bZahlBearbeiten = False
+		lblZahlZeileBearbeiten.Color = Colors.ARGB(255, 211, 211, 211)
+		txtZahlBetrag.Text = ""
+	End If
+End Sub
+
+'Zahlungen: Eingabe speichern
+Sub lblZahlSpeichern_Click
+	Dim sBetrag As String
+
+	'Prüfung, ob dezimal Zahl eingeben wurde
+	If txtZahlBetrag.Text <> "" Then 
+		If txtZahlBetrag.Text.IndexOf(".") = -1 And txtZahlBetrag.Text.IndexOf(",") = -1 Then
+			sBetrag = txtZahlBetrag.Text & ".00"
+		Else
+			Dim iGesamt, iPos As Int
+			
+			'Prüfung, ob mehr als 2 Nachkommastellen und notfalls mit 0 auffüllen
+			If txtZahlBetrag.Text.IndexOf(".") > -1 Then
+				iGesamt = txtZahlBetrag.Text.Length
+				iPos = txtZahlBetrag.Text.LastIndexOf(".")
+			Else
+				iGesamt = txtZahlBetrag.Text.Length
+				iPos = txtZahlBetrag.Text.LastIndexOf(",")
+			End If
+			
+			If (iGesamt - (iPos + 1)) > 2 Then
+				txtZahlBetrag.Text = txtZahlBetrag.Text.SubString2(0, iPos + 3)
+			Else If (iGesamt - (iPos + 1)) = 1 Then
+				txtZahlBetrag.Text = txtZahlBetrag.Text & "0"
+			End If
+			
+			sBetrag = txtZahlBetrag.Text.Replace(",", ".")
+		End If
+	
+		If Helper.ZahlungenSpeichern(sBetrag, lblZahlDatum.Text, lblZahlAuswahlZahlungenFuer.Text) Then
+			ZahlungenHolen(bZahlDatum)
+			txtZahlBetrag.Text = ""
+			bZahlBearbeiten = False
+			lblZahlZeileBearbeiten.Color = Colors.ARGB(255, 211, 211, 211)
+		End If
+	End If
+	
+End Sub
+#End Region
+
+#Region Button-Klicks
+'Datumsauswahl über Kalender
+Sub btKalender_Click
+	'Datumsauswahl 
+	StartActivity(Kalender)
+End Sub
+
+'Datumsauswahl um einen Tag erhöhen
+Sub btTagVor_Click
+	Dim lDate As Long
+	
+	lDate = DateTime.DateParse(btKalender.Text)
+	lDate = DateTime.Add(lDate, 0, 0, 1)
+	
+	btKalender.Text = DateTime.Date(lDate)
+	'Termine anzeigen
+	TermineHolen(btKalender.Text)
+End Sub
+
+'Datumauswahl um einen Tag zurück
+Sub btTagZurueck_Click
+	Dim lDate As Long
+	
+	lDate = DateTime.DateParse(btKalender.Text)
+	lDate = DateTime.Add(lDate, 0, 0, -1)
+	
+	btKalender.Text = DateTime.Date(lDate)	
+	'Termine anzeigen
+	TermineHolen(btKalender.Text)
+End Sub
+
+'SchülerListe aufrufen
+Sub lblAuswahlSchueler_Click
+	StartActivity(Schueler)
+	SchuelerKlasse.KlasseSelected = 0
+End Sub
+
+'Termin vormerken
+Sub btVormerken_Click
+	Dim checkZeit, checkSpeichern As Boolean
+	
+	'generelles setzen der CheckZeiten
+	checkZeit = True
+	
+	'Zeitliche Überscheidung prüfen, nur wenn neuer Termin eingegeben wurde
+	checkZeit = Helper.StartzeitPuefen(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text)
+
+	If checkZeit = False Then
+		Msgbox2Async("Terminliche Überscheidung mit einem anderem Termin." & CRLF & "Soll dennoch gespeichert werden?", "Achtung! Überscheidung", "Ja", "", "Nein", info, False)
+		Wait For Msgbox_Result(iResult As Int)
+	End If
+			
+	If iResult = DialogResponse.POSITIVE Or checkZeit Then
+		checkSpeichern = Helper.DatenVormerken(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+						lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text, lblAuswahlFahrlehrer.Text, lblAuswahlKfz.Text, lblAuswahlBegleitfahrzeug.Text)
+						
+		If checkSpeichern Then
+			thStart.CurrentTab = thStart.CurrentTab - 1
+			TermineHolen(btKalender.Text)
+		Else
+			Msgbox("Fehler beim Speichern der Daten", "Fehler")
+		End If
+	End If 
+End Sub
+
+'Termineingaben 'Abbrechen'
+Sub btAbbruch_Click
+	thStart.CurrentTab = 0
+	SonstigeTaetigkeitenAktiv(True)
+	sAusgewaehlterSchueler = lblAuswahlSchueler.Text
+	iAusgewaehlterSchuelrID = Helper.GetSchuelerID(sAusgewaehlterSchueler)
+	lblAuswahlBegleitfahrzeug.Color = Colors.LightGray
+	lblAuswahlBegleitfahrzeug.Text = "";
+End Sub
+
+'Unterschrift erfassen -Anzeigen des Unterschriften-Feldes
+Sub btUnterschrift_Click
+	'Panel für Unterschrift anzeigen
+	panStart.Visible = False
+	panUnterschrift.Visible = True
+	panPruefung.Visible = False
+	SignatureCapture.sPath = ""
+	
+	'Größenverhältniss ermitteln
+	' dient zur Begrenzung der Unterschrift im Hauptprogramm
+	' Maße im Hauptprogramm X = 200 und Y = 60
+	Dim laenge, hoehe As Int
+	laenge = panUnterschriftFeld.Width
+	hoehe = panUnterschriftFeld.Height
+	Log("Feld Unterschrift Laenge: " & laenge)
+	Log("                  Hoehe : " & hoehe)
+End Sub
+
+'Termindaten speichern
+Sub btSpeichern_Click
+	'Prüfen, ob Daten schon gespeichert wurden
+'	If bDatenVorhanden Then
+'		If CheckDatenSchonVorhanden Then
+'			iTerminID = 0
+'		End If
+'	End If
+	
+	'Daten direkt speichern
+	If iTerminID = 0 And bSonstTaetigkeit = False Then
+		If bSonstTaetigkeit Then
+			btVormerken_Click
+		Else
+			'direktes speichern des Termins
+			Msgbox2Async("Sollen Daten direkt gespeichern werden?", "Hinweis", "Ja", "", "Nein", info, False)
+			Wait For Msgbox_Result(iResult As Int)
+			If iResult = DialogResponse.POSITIVE Then
+				'Daten vormerken
+				btVormerken_Click
+				
+				'TerminID holen
+				iTerminID = Helper.TerminIDHolen(btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+												lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text)
+				bDatenVorhanden = True
+			Else
+				bDatenVorhanden = False
+				ToastMessageShow("Daten wurden nicht gespeichert", True)
+			End If
+		End If		
+	End If
+		
+	'Prüfungsergenbis abfragen -> nur bei Prüfungen
+	If cbPruefungsErgebnis.Checked And bSonstTaetigkeit = False Then
+		If Helper.IsPruefung(lblAuswahlFahrbezeichnung.Text) Then
+			panStart.Visible = False
+			panUnterschrift.Visible = False
+			panPruefung.Visible = True
+		Else
+			btPruefErgebnisOK_Click
+		End If
+	Else
+		btPruefErgebnisOK_Click
+	End If
+End Sub
+
+'Erfassung des Prüfungsergebnis und speichern der Termin-/Fahrdaten
+Sub btPruefErgebnisOK_Click
+	Dim checkZeit, checkSpeichern, checkSignature As Boolean
+	
+	'generelles setzen der CheckZeiten
+	checkZeit = True
+	
+	If lblAuswahlFahrbezeichnung.Text <> "Unt" Then
+		'Zeitliche Überschneidung prüfen, nur wenn neuer Termin eingegeben wurde
+		checkZeit = Helper.StartzeitPuefen(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text)
+		
+	End If
+
+	If checkZeit = False And bDatenVorhanden Then
+		Msgbox2Async("Terminliche Überscheidung mit einem anderem Termin." & CRLF & "Soll dennoch gespeichert werden?", "Achtung! Überscheidung", "Ja", "", "Nein", info, False)
+		Wait For Msgbox_Result(iResult As Int)
+	End If
+			
+	If iResult = DialogResponse.POSITIVE Or checkZeit Then
+		If bSonstTaetigkeit Then
+			If lblAuswahlFahrbezeichnung.Text = "Unt" Then
+				'Unterschrift vorhanden?
+				checkSignature = Helper.checkSignature(iTerminID)
+				
+				'Sonstige Tätigkeiten speichern - entweder MIT oder OHNE Unterschrift
+				If checkSignature Then
+					checkSpeichern = Helper.SonstigeTaetigkeitenSpeichern(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, _
+							lblAuswahlFahrbezeichnung.Text, lblAuswahlFahrlehrer.Text, checkSignature)
+				Else
+					Msgbox2Async("Keine Unterschrift vorhanden" & CRLF & CRLF & "Soll dennoch gespeichert werden?", "Unterschrift", "Ja", "", "Nein", info, False)
+					Wait For Msgbox_Result(iResult As Int)
+					If iResult = DialogResponse.POSITIVE Then
+						checkSpeichern = Helper.SonstigeTaetigkeitenSpeichern(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, _
+								lblAuswahlFahrbezeichnung.Text, lblAuswahlFahrlehrer.Text, checkSignature)
+					Else
+						checkSpeichern = True
+						ToastMessageShow("Daten wurden nicht gespeichert", True)
+					End If
+				End If
+			Else
+				checkSpeichern = Helper.SonstigeTaetigkeitenSpeichern(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, _
+						lblAuswahlFahrbezeichnung.Text, lblAuswahlFahrlehrer.Text, checkSignature)
+			End If
+			If checkSpeichern Then			
+				SonstigeTaetigkeitenAktiv(True)
+			End If
+		Else
+			'Fahrdaten speichern
+			'Sicherheitsabfrage bei doppelter Speicherung
+'			Dim bresult As Boolean
+'			bresult = Helper.CheckEintragSchonGespeichert(iTerminID)
+'			
+'			If bresult Then
+'				result = Msgbox2("Eintrag wurde schon gespeichert" & CRLF & CRLF & "Eintrag erneut speichern?" & CRLF & "(vorhandene Unterschrift geht verloren und muss erneut erfasst werden)", "Sicherung", "Ja", "", "Nein", info)
+'				If result = DialogResponse.POSITIVE Then
+'					'ToDo: 	
+'					'- Unterschriften Fenster öffnen
+'					'Panel für Unterschrift anzeigen
+'					panStart.Visible = False
+'					panUnterschrift.Visible = True
+'					panPruefung.Visible = False
+'					
+'					'		- Abbruch ohne Änderungen
+'					'		- Speichern mit Änderungen bzw. als update des Ursprungwertes
+'					checkSpeichern = True
+'				Else
+'					checkSpeichern = True
+'					ToastMessageShow("Daten wurden nicht geändert", True)
+'				End If
+'			Else
+				
+				If cbPruefungsErgebnis.Checked Then
+					Dim sPruefErgebnis As String
+					If rbBestanden.Checked Then
+						'sPruefErgebnis = "Bestanden"
+						sPruefErgebnis = "2"
+					Else If rbNichtBestanden.Checked Then
+						'sPruefErgebnis = "Nicht bestanden"
+						sPruefErgebnis = "1"
+					Else If rbNichtErfassen.Checked Then
+						'sPruefErgebnis = "Nicht erfasst"
+						sPruefErgebnis = "0"
+					End If
+				End If
+				
+				If iTerminID > 0 Then
+					'Unterschrift vorhanden?
+					checkSignature = Helper.checkSignature(iTerminID)
+								
+					'Datensatz speichern
+					If checkSignature Or bDatenVorhanden = False Then
+						checkSpeichern = Helper.FahrdatenSpeichernUpdate(iTerminID, sPruefErgebnis, cbPruefungsErgebnis.Checked, checkSignature)
+					Else
+						Msgbox2Async("Keine Unterschrift vorhanden" & CRLF & CRLF & "Soll dennoch gespeichert werden?", "Unterschrift", "Ja", "", "Nein", info, False)
+						Wait For Msgbox_Result(iResult As Int)
+						If iResult = DialogResponse.POSITIVE Then
+							checkSpeichern = Helper.FahrdatenSpeichernUpdate(iTerminID, sPruefErgebnis, cbPruefungsErgebnis.Checked, checkSignature)
+						Else
+							checkSpeichern = True
+							ToastMessageShow("Daten wurden nicht gespeichert", True)
+						End If
+					End If
+				Else
+					'direktes speichern des Termins
+'					result = Msgbox2("Sollen Daten direkt gespeichern werden?", "Hinweis", "Ja", "", "Nein", info)
+'					If result = DialogResponse.POSITIVE Then
+'						'Daten vormerken
+'						checkSpeichern = Helper.DatenVormerken(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+'															lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text, lblAuswahlFahrlehrer.Text, lblAuswahlBegleitfahrzeug.Text)
+'						If checkSpeichern Then
+'							iTerminID = Helper.TerminIDHolen(btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+'															lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text)
+'							'mit oder ohne Unterschrift?
+'							result = Msgbox2("Soll Unterschrift erfasst werden?", "Hinweis", "Ja", "", "Nein", info)
+'							If result = DialogResponse.POSITIVE Then
+'								bDatenVorhanden = True
+'								btUnterschrift_Click
+'								'Sub-Methode verlassen
+'								Return
+'							Else
+'								'Daten ohne Unterschrift speichern
+'								checkSpeichern = Helper.FahrdatenSpeichernUpdate(iTerminID, sPruefErgebnis, cbPruefungsErgebnis.Checked, checkSignature)
+'							End If
+'						Else
+'							'Fehlerfall, wenn Daten nicht gespeichert werden konnten -> ist später abgefangen
+'						End If
+'					Else
+						checkSpeichern = True
+'						ToastMessageShow("Daten wurden nicht gespeichert", True)
+'					End If
+				End If
+'			End If
+		End If
+		
+		If  iTerminID > 0 And checkSpeichern Then
+			thStart.CurrentTab = thStart.CurrentTab - 1
+			TermineHolen(btKalender.Text)
+		Else If checkSpeichern Then
+			'nicht weiter machen -> auf aktuellem Tab bleiben und ggf. Daten vor zumerken
+			thStart.CurrentTab = thStart.CurrentTab - 1
+			TermineHolen(btKalender.Text)
+		Else
+			Msgbox("Fehler beim Speichern der Daten", "Fehler")
+			panStart.Visible = True
+			panUnterschrift.Visible = False
+			panPruefung.Visible = False
+		End If
+	End If 
+	
+End Sub
+
+'Unterschrift speichern
+Sub btUnterschrfitSpeichern_Click
+	'Unterschrift in DB speichern und zurück auf Start-Seite
+	'GH: auskommentiert, da keine Bildatei gespeichert werden soll
+	'If SignatureCapture.Save(sigD, Main.SourceFolder, "Unterschrift.png") Then
+		'21.03.2013 GH: Verschlüsselung eingebaut
+		'If Helper.UnterschriftSpeichern(iTerminID, data) Then	
+		'
+		'End If
+	'Else
+	'	Msgbox2("Fehler beim speichern der Unterschrift", "Fehler", "OK", "", "", info)
+	'End If
+		
+	'1.Schritt: Termin vormerken
+	Dim checkZeit, checkSpeichern As Boolean
+	
+	'generelles setzen der CheckZeiten
+	checkZeit = True
+
+	'2021-04-22 GH: keine Überprüfung der Zeit, wenn nur Unterschrift gespeichert werden soll
+	If lblAuswahlFahrbezeichnung.Text = "Unt" Then
+		lblAuswahlKlasse.Text = ""
+		txtAuswahlTreffpunkt.Text = ""
+		lblEinheitAnzeige.Text = "0"
+	Else
+		'Zeitliche Überscheidung prüfen, nur wenn neuer Termin eingegeben wurde
+		checkZeit = Helper.StartzeitPuefen(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text)
+	End If
+	
+	If checkZeit = False Then
+		Msgbox2Async("Terminliche Überscheidung mit einem anderem Termin." & CRLF & "Soll dennoch gespeichert werden?", "Achtung! Überscheidung", "Ja", "", "Nein", info, False)
+		Wait For Msgbox_Result (iResult As Int)
+	End If
+			
+	If iResult = DialogResponse.POSITIVE Or checkZeit Then
+		checkSpeichern = Helper.DatenVormerken(iTerminID, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+						lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text, lblAuswahlFahrlehrer.Text, lblAuswahlKfz.Text, lblAuswahlBegleitfahrzeug.Text)
+						
+		If checkSpeichern Then
+			'2.Schritt: Unterschrift mit dazugehöriger TerminID speichern
+			iTerminID = Helper.TerminIDHolen(btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlKlasse.Text, _
+										lblAuswahlFahrbezeichnung.Text, txtAuswahlTreffpunkt.Text)
+			Dim bVerschluesselt As Boolean
+			bVerschluesselt = Helper.UnterschriftSpeichernNeu(iTerminID, lblAuswahlFahrbezeichnung.Text, lblAuswahlKlasse.Text, lblAuswahlKfz.Text, _
+								lblAuswahlBegleitfahrzeug.Text, btKalender.Text, lblAbfahrtAnzeige.Text, lblEinheitAnzeige.Text, lblAuswahlFahrbezeichnung.Text, lblAuswahlFahrlehrer.Text)
+			
+			If bVerschluesselt Then
+				bDatenVorhanden = True
+				btSpeichern_Click
+			Else
+				MsgboxAsync("Fehler beim speichern der Unterschrift in DB", "Fehler")
+				Wait For Msgbox_Result (iResult As Int)
+			End If
+'				thStart.CurrentTab = thStart.CurrentTab - 1
+'				TermineHolen(btKalender.Text)
+		Else
+			MsgboxAsync("Fehler beim Speichern der Daten", "Fehler")
+			Wait For Msgbox_Result (iResult As Int)
+		End If
+	End If 
+End Sub
+
+'Unterschrift verwerfen
+Sub btUnterschriftLoeschen_Click
+	SignatureCapture.sPath = ""
+	SignatureCapture.Clear(sigD)
+End Sub
+
+'Unterschrift abbrechen
+Sub btUnterschriftAbbruch_Click
+	panStart.Visible = True
+	panUnterschrift.Visible = False
+	panPruefung.Visible = False
+	
+	'Rücksetzen der Stringvariablen der Unterschriften
+	SignatureCapture.sPath = ""
+	btUnterschriftLoeschen_Click
+End Sub
+
+'Konfiguration: Anzeige der aktuellen Liste
+Sub btEinstellAktuelleListe_Click
+	bTreffpunktAuswahl = True
+	StartActivity(Treffpunkt)
+	
+	lstTreffpunkt.Clear
+	Helper.FillTreffpunktListView(lstTreffpunkt)
+End Sub
+
+'Konfiguration: Neuen fixen Treffpunkt in Auswahlliste übernehmen
+Sub btEinstellSpeichern_Click
+	Dim sNeuerTreffpunkt As String
+	
+	sNeuerTreffpunkt = txtNeuerTreffpunkt.Text.Trim
+	
+	If Helper.InsertNeuenTreffpunkt(sNeuerTreffpunkt) Then
+		lstTreffpunkt.Clear
+		Helper.FillTreffpunktListView(lstTreffpunkt)
+		txtNeuerTreffpunkt.Text = ""
+		ToastMessageShow("Neuer Treffpunkt hinzugefügt!", False)
+	Else
+		ToastMessageShow("Fehler beim anlegen des neues Treffpunkts! Maximale Anzahl erreicht!", True)
+	End If
+End Sub
+
+'Konfiguration: Anwendung beenden
+Sub btAppBeenden_Click
+	'eingestellte Konfigdaten in INI Datei speichern
+	If Helper.SaveConfigDataToINI(lblEinstAnzeigeFahrlehrer.Text, lblEinstAnzeigeKfz.Text, txtEinstAnzeigeFahrEinheit.Text, _
+										cbBegleitfahrzueg.Checked, cbPruefungsErgebnis.Checked, cbBVFKontrolle.Checked) Then
+		If Helper.SaveTreffpunkteToINI Then
+			Activity.Finish()
+			ExitApplication()
+		Else
+			ToastMessageShow("Fehler beim speichern der Treffpunkte!", True)
+		End If
+	Else
+		ToastMessageShow("Fehler beim speichern der Konfig-Daten in INI Datei!", True)
+	End If
+	
+	If SQL1.IsInitialized() Then
+		Helper.DBinBenutzung(False)
+		SQL1.Close()
+	End If
+End Sub
+
+'Fahrdaten: Anzeige der Layoutgröße und Skalierung
+Sub btKalender_LongClick
+	ToastMessageShow("Laygröße: " & lv.Height & " " & lv.Width & " " & lv.Scale, False)	
+End Sub
+#End Region 
+
+#End Region
+
+#Region Zeit-Zählungen
+'Angezeigte Uhrzeit addieren
+Sub UhrzeitAddieren(iStd As Int, iMin As Int)
+	Dim sHour, sMinute As String
+	Dim iIndex As Int
+	Dim rest As Int
+	
+	iIndex = lblAbfahrtAnzeige.Text.IndexOf(":")
+	sHour = lblAbfahrtAnzeige.Text.SubString2(0, iIndex)
+	sMinute = lblAbfahrtAnzeige.Text.SubString(iIndex + 1)
+	
+	If iMin > 1 Then
+		'Minuten im 5er Takt erhöhen
+		rest = sMinute Mod 5
+		If rest > 0 Then
+			For i = rest To 4
+				sMinute = sMinute + 1
+			Next 
+		Else		
+			sMinute = sMinute + 5
+		End If
+		
+		If sMinute > 55 Then
+			sMinute = 0
+			If sHour = 23 Then
+				sHour = 0
+			Else
+				sHour = sHour + 1
+			End If
+		
+			If sHour >= 0 And sHour < 10 Then
+				sHour = "0" & sHour
+			End If
+		End If
+		
+		'Führende 0 bei einstelligen Werten
+		If sMinute >= 0 And sMinute < 10 Then
+			sMinute = "0" & sMinute
+		End If
+	Else If iMin > 0 Then
+		'Minuten im minuten Takt erhöhen
+		sMinute = sMinute + 1
+		If sMinute > 59 Then
+			sMinute = 0
+			If sHour = 23 Then
+				sHour = 0
+			Else
+				sHour = sHour + 1
+			End If
+		
+			If sHour >= 0 And sHour < 10 Then
+				sHour = "0" & sHour
+			End If
+		End If
+			
+		'Führende 0 bei einstelligen Werten
+		If sMinute >= 0 And sMinute < 10 Then
+			sMinute = "0" & sMinute
+		End If
+	End If
+		
+	If iStd = 1 Then
+		If sHour >= 23 Then
+			sHour = 0
+		Else
+			sHour = sHour + 1
+		End If
+		
+		If sHour >= 0 And sHour < 10 Then
+			sHour = "0" & sHour
+		End If
+	End If
+	
+	lblAbfahrtAnzeige.Text = sHour & ":" & sMinute
+End Sub
+
+'Angezeigte Uhrzeit substrahieren
+Sub UhrzeitSubstrahieren(iStd As Int, iMin As Int)
+	Dim sHour, sMinute As String
+	Dim iIndex As Int
+	Dim rest As Int
+	
+	iIndex = lblAbfahrtAnzeige.Text.IndexOf(":")
+	sHour = lblAbfahrtAnzeige.Text.SubString2(0, iIndex)
+	sMinute = lblAbfahrtAnzeige.Text.SubString(iIndex + 1)
+	
+	If iMin > 1 Then
+		'Minuten im 5er Takt reduzieren
+		rest = sMinute Mod 5
+		If rest > 0 Then
+			For i = 0 To rest - 1
+				sMinute = sMinute - 1
+			Next 
+		Else		
+			sMinute = sMinute - 5
+		End If
+		
+		If sMinute < 0 Then
+			sMinute = 55
+			If sHour = "00" Then
+				sHour = 23
+			Else
+				sHour = sHour - 1
+			End If
+		
+			If sHour >= 0 And sHour < 10 Then
+				sHour = "0" & sHour
+			End If
+		End If
+		
+		'führende 0 bei einstelligen Werten
+		If sMinute >= 0 And sMinute < 10 Then
+			sMinute = "0" & sMinute
+		End If
+	Else If iMin > 0 Then
+		'Minuten im minuten Takt reduzieren
+		sMinute = sMinute - 1
+		If sMinute < 0 Then
+			sMinute = 59
+			If sHour = "00" Then
+				sHour = 23
+			Else
+				sHour = sHour - 1
+			End If
+		
+			If sHour >= 0 And sHour < 10 Then
+				sHour = "0" & sHour
+			End If
+		End If
+		
+		'führende 0 bei einstelligen Werten
+		If sMinute >= 0 And sMinute < 10 Then
+			sMinute = "0" & sMinute
+		End If
+	End If
+	
+	If iStd = 1 Then
+		If sHour <= 0 Then
+			sHour = 23
+		Else
+			sHour = sHour - 1
+		End If
+		
+		If sHour >= 0 And sHour < 10 Then
+			sHour = "0" & sHour
+		End If
+	End If
+	
+	lblAbfahrtAnzeige.Text = sHour & ":" & sMinute
+End Sub
+#End Region
+
+#Region Initialisierungen
+'Tabs hinzufügen
+Sub AddTabs
+	thStart.AddTabWithIcon("", termin, termin ,"Start_Tab")
+	thStart.AddTabWithIcon("", fahrstunden, fahrstunden, "Fahrdaten_Tab")
+	thStart.AddTabWithIcon ("", stammdaten, stammdaten, "Stammdaten_Tab")
+	thStart.AddTabWithIcon("", zahlungen, zahlungen, "Zahlungen_tab")
+	If aKonfig(2) Then
+		thStart.AddTabWithIcon("", lernkontrolle, lernkontrolle, "Ausbildungbvf_Tab")
+	Else
+		thStart.AddTabWithIcon("", lernkontrolle, lernkontrolle, "Ausbildungskontrolle_Tab")
+	End If
+	thStart.AddTabWithIcon("", config, config, "Einstellung_Tab")
+End Sub
+
+'Initialisieren aller Auswahl-Listen
+Sub ListInitialisieren
+	lstSchueler.Initialize("LstSchueler")
+	Helper.FillSchuelerListView(lstSchueler)
+	
+	lstFahrlehrer.Initialize("LstFahrlehrer")
+	Helper.FillFahrlehrerListView(lstFahrlehrer)
+	
+	lstKfz.Initialize("LstKFZ")
+	Helper.FillKfzListView(lstKfz)
+	
+	lstZahlungFuer.Initialize("LstZahlungFuer")
+	Helper.FillZahlungenFuerListView(lstZahlungFuer)
+			
+	lstSchuelerKlasse.Initialize("LstSchuelerKlasse")
+	Helper.FillSchuelerKlasseListView(lstSchuelerKlasse)
+	
+	lstKlassen.Initialize("LstKlassen")
+	Helper.FillKlassenListView(lstKlassen)
+	
+	lstFahrtbezeichnung.Initialize("LstFahrtbezeichnung")
+	Helper.FillFahrtenbezeichnungListView(lstFahrtbezeichnung)
+	
+	lstSonstigeTaetigkeiten.Initialize("LstSonstigeTaetigkeiten")
+	Helper.FillSonstigeTaetigkeitenListView(lstSonstigeTaetigkeiten)
+	
+	lstTreffpunkt.Initialize("LstTreffpunkt")
+	Helper.FillTreffpunktListView(lstTreffpunkt)
+	
+	lstBegleitfahrzeug.Initialize("LstBegleitfahrzeug")
+	Helper.FillBegleitfahrzeugListView(lstBegleitfahrzeug)
+	
+	'Füllen erfolgt erst später, wenn Termine angezeigt werden sollen
+	lstTermine.Initialize("LstTermine")
+	lstAusbildungLernThemen.Initialize("LstAusbildungLernThemen")
+	lstAusbildungLernPunkte.Initialize("LstAusbildungLernPunkte")
+	
+End Sub
+
+'Beschriftungen sämtlicher Labels und Buttons
+Sub Beschriftungen
+	Helper.StartBeschriftung(btKalender, btTagVor, btTagZurueck, lblFahrlehrer, lblSchueler, lblFahrStd, lblGesamtStd)
+	Helper.EinstellungBeschriftung(lblEinstFahrlehrer, lblEinstKfz, lblEinstFahrEinheit, lblEinstellTreffpunkt, btEinstellAktuelleListe, _
+		btEinstellSpeichern, lblBegleitfahrzeugErfassen, lblPruefungErgebnis, btAppBeenden, txtNeuerTreffpunkt, txtEinstAnzeigeFahrEinheit, lblBVFKontrolle)
+	Helper.FahrdatenBeschriftung(lblAbfahrt, lblEinheit, lblKlasse, lblAuswahlKlasseAlle, lblKfz, lblFahrtbezeichnung, lblStdPlus, _
+		lblStdMinus, lblMinPlus, lblMinMinus, lblMin1Plus, lblMin1Minus, lblEinheitPlus, lblEinheitMinus, _
+		lblAbfahrtAnzeige, lblEinheitAnzeige, lblTreffpunkt, lblBegleitfahrzeug, btVormerken, btAbbruch, _
+		btSpeichern, btUnterschrift, lblPfeil, lblEinheit5Plus, lblEinheit5Minus, lblEinheit1Plus, lblEinheit1Minus, _
+		lblSonder, lblPruefungsergebnisse, rbNichtErfassen, rbNichtBestanden, rbBestanden, btPruefErgebnisOK, txtAuswahlTreffpunkt)
+	Helper.UnterschriftBeschriftung(btUnterschrfitSpeichern, btUnterschriftAbbruch, btUnterschriftLoeschen)
+	Helper.StammdatenBeschriftung(lblStammdatenTelefon, lblStammdatenHandy, lblStammdatenArbeitsstelle, lblStammdatenTelefonArbeit, _
+		lblStammdaten1, lblStammdaten2, lblKlasse1, lblKlasse2, lblKlasse3, lblKlasse4, lblStammdatenKlassen, lblStammdatenHatKlasse, _
+		lblStammdatenEmail)
+	Helper.StammdatenBeschriftung1(lblStammdatenKontostand, lblStammdatenAntragEingereicht, lblStammdatenAntragZurueck, lblStammdatenGeburtstag, _
+		lblStammdatenNationalitaet, lblStammdatenAnmeldung, lblStammdatenSchuleFiliale)
+	Helper.StammdatenBeschriftungKlasse(lblKlasseGrundstoff, lblKlasseDoppelstunde, lblKlasseSpezifisch, lblKlasseUebungsfahrt, _
+		lblKlasseUebungGrund, lblKlasseUeberland, lblKlasseAutobahn, lblKlasseNachtfaht, lblKlasseUnterweisungFhrzg, _
+		lblKlasseTheorPruefung, lblKlassePraktischePruefung, lblKlasseDoppelstundeText, lblStdJe45Min)
+	Helper.ZahlungenBeschriftung(lblZahlTag, lblZahlAlle, lblZahlZahlungFuerText, lblZahlZahlungstext, lblZahlZeileBearbeiten, lblZahlSpeichern, txtZahlBetrag)
+	If aKonfig(2) Then
+		Helper.AusbildungBVFBeschriftung(lblGrundstufe, lblAusbildungBVF0, lblAusbildungBVF1, lblAusbildungBVF2, lblAusbildungBVF3, lblAusbildungBVF4, lblAusbildungBVF5, lblAusbildungBVF6)
+		Helper.AusbildungBVFPan0(cbBesonderhEinsteigen, cbEinstellen, cbLenkrad, cbSpiegel, cbKopfstuetze, cbSitz, cbLenkradhaltung, cbPedale, cbGurt, cbSchaltWaehlhebel, cbZuendschloss, cbMotorAnlassen, _
+			cbAnfahrAnhalte)
+		Helper.AusbildungBVFPan1(cbSchaltuebg, cbHoch1_2, cbHoch2_3, cbHoch3_4, cbRunter4_3, cbRunter3_2, cbRunter2_1, cbRunter4_2, cbRunter4_1, cbRunter3_1, cbLenkuebung)
+		Helper.AusbildungBVFPan2(cbUmkehren, cbEinparkenLaengs, cbLVorwaertsRechts, cbLRueckwaertsLinks, cbLRueckwaertsRechts, cbLVorwaertsLinks, cbRueckwaertsfahren, cbEinparkenQuer, cbQVorwaertsRechts, cbQRueckwaertsLinks, cbQRueckwaertsRechts, _
+			cbQVorwaertsLinks, cbGefahrbremsung)
+		Helper.AusbildungBVFPan3(cbRollenSchalten, cbBremsSchalten, cbBremsuebung, cbDegressiv, cbZielbremsung, cbGefahrsituation, cbGefaelle, cbAnhalten, cbAnfahren, _
+			cbRueckwaerts, cbSichern, cbSchalten)
+		Helper.AusbildungBVFPan4(cbSteigung, cbStAnhalten, cbStAnfahren, cbStRueckwaerts, cbStSichern, cbStSchalten, cbTastgeschw, cbBedienKontroll, cbOertlichBesonder)
+		Helper.AusbildungBVFPan5(cbFahrbahnbenutzung, cbEinordnen, cbMarkierungen, cbFahrstreifenwechsel, cbLinks, cbRechts, cbVorbeifUeberholen, cbAbbiegen, cbABRechts, cbABLinks, cbMehrspurig, cbRadweg, _
+			cbSonderstreifen)
+		Helper.AusbildungBVFPan6(cbStrassenbahn, cbEinbahnstrasse, cbVorfahrt, cbRechtsVorLinks, cbGruenpfeil, cbPolizeibeamte, cbGruenpfeilSchild, cbGeschwAbstand, cbSituationVerkehrstn, _
+			cbFussgaengerueberweg, cbOeffentlVerkehrsm, cbAeltereBehinderte, cbEinbahnstrRadfahrer)
+		Helper.AusbildungBVFPan7(cbKinder, cbSchulbus, cbRadfahrerMofa, cbVerkehrsberuhigt, cbSchwierigeVerkehrsf, cbEngpass, cbKreisverkehr, cbBahnuebergangWarte, cbKritischeVerkehrss, _
+			cbHauptverkehrszt, cbPartnerVerhalten, cbSchwungNutzen, cbFussgaengerSchutzb)
+		Helper.AusbildungBVFPan8(cbAngepassteGeschw, cbAbstand, cbULVorne, cbULHinten, cbULSeitlich, cbBeobachtSpiegel, cbVerkehrszeichen, cbKreuzungEinmuend, cbKurven, cbSteigungen, _
+			cbULGefaelle, cbAlleen, cbUeberholen)
+		Helper.AusbildungBVFPan9(cbBesondereSituat, cbLiegenblSichern, cbEinfahrenOrtsch, cbFussgaenger, cbWildTiere, cbBesondereAnford, cbLeistungsgrenze, cbOrientierung, cbAblenkung)
+		Helper.AusbildungBVFPan10(cbFahrtplanung, cbEinfahrtAB, cbABFahrbahnwechsel, cbGeschwindigkeit, cbABAbstand, cbABVorne, cbABHinten, cbABSeitlich, cbABUeberholen, cbSchilder, _
+			cbVorbeifahren, cbRastParkTank, cbVerhUnfall)
+		Helper.AusbildungBVFPan11(cbDichterVerkehr, cbBesonderSituat, cbBesonderAnford, cbABLeistungsgrenze, cbKonfliktSitua, cbABAblenkung, lblDaemmerung, cbBeleuchtung, cbKontrolle, _
+			cbEinstell, cbBenutzung, cbFernlicht, cbVerlassenBAB)
+		Helper.AusbildungBVFPan12(cbBeleuchtStrasse, cbUnbeleuchtStrasse, cbParken, cbDUBesonderSituat, cbSchlechteWitterung, cbTiere, cbBahnuebergaenge, cbUnbelVerkehrTN, cbDUBesonderAnfor, _
+			cbBlendung, cbDUOrientierung, cbAbschlussbesp)
+		Helper.AusbildungBVFPan13(cbSelbstFahren, cbInnerorts, cbAusserorts, cbVerantwFahren, cbTestfPruef, cbFAKT, cbAndere, cbWiederholung, cbLeistungsbew)
+		Helper.AusbildungBVFPan14(lblChecklisteFahrvorb, cbReifen, cbEinAusschalten, cbFunktionPruefen, cbStandlicht, cbNebelschluss, cbBlinker, cbAbblendlicht, cbWarnblicke, cbHupe, _
+			cbBSFernlicht, cbSchlussLeuchte, cbBremslicht)
+		Helper.AusbildungBVFPan15(cbKontrollLBenenn, cbRueckstrahler, cbVorhandensein, cbBeschaedigung, cbLenkung, cbLenkschlEntriegeln, cbPruefLenkSpiel, cbFunktBremse, cbBetriebsBremse, _
+			cbFeststellBremse, cbAnlegenGurt)
+		Helper.AusbildungBVFPan16(cbRichtigSitz, cbEinstellRueckspiegel, cbEinKopfstuetze, cbEinLenkrad, lblHeizungLueftung, cbBedienenAgg, cbHeizung, cbHeckHeizung, cbBehSonderaus, _
+			cbLueftung, cbKlimaanlage)
+		Helper.AusbildungBVFPan17(cbEnergieNutzung, cbKeineUnnVerbr, cbRechtztAbsch, lblBetriebsVerkehrssich, cbMotorraum, cbMotoroel, cbKuehlmittel, cbScheibenwaschm, cbTanken, cbBremsen)
+		Helper.AusbildungBVFPan18(cbSicherungsmittel, cbWarndreieck, cbBordwerkzeug, cbZusaetzlichAus, cbVerbandskasten, cbAussenkontrolle, cbScheibenWischer, cbKennzeichen, cbCheckSpiegel, _
+			cbCheckBeleuchtung, cbLadung, cbLadungssicherung, cbKenntlichmachung)
+		Helper.AusbildungBVFPan19(cbFahreSchlWitt, cbWittLueftung, cbWittScheiben, cbRegen, cbWasserlachen, cbWindSturm, cbMatchSchnee, cbEis, cbWittBeleuchtung)
+	Else
+		Helper.AusbildungskontrolleBeschriftung(lblAusbildung0, lblAusbildung1, lblAusbildung2, lblAusbildung3, lblAusbildung4, lblAusbildung5, lblAusbildung6, _
+			lblAusbildungPlus, lblAusbildungMinus, lblAusbildungZahl0, lblAusbildungZahl1, lblAusbildungZahl2,lblAusbildungZahl3, lblAusbildungZahl4, _
+			lblAusbildungZahl5, lblAusbildungZahl6, lblAusbildungZahlX, lblAusbildungZahlMinus, lblAusbildungZahlPlus, lblAusbildungZahlAusrufe, _
+			lblAusbildungZahlDel)
+	End If
+End Sub
+#End Region
+
+#Region sämtliche Termin Aktionen
+'Termine holen und in ListView anzeigen
+Sub TermineHolen(sDate As String)
+	Dim iStunden(2) As Int 
+
+	lstTermine.Clear
+	'Terminliste des Fahrlehrers füllen und Rückgabe der Gesamttagesstunden 
+	iStunden = Helper.FahrlehrerTermineHolen(sDate, lstTermine)
+	
+	lblAnzeigeGesamtStd.Text = iStunden(0)
+	lblAnzeigeFahrStd.Text = iStunden(1)
+	
+	lstTermine.ScrollingBackgroundColor = Colors.Transparent
+		
+	'zweite Zeile in schwarzer Schrift
+	Dim lblLinie As Label
+	lblLinie = lstTermine.TwoLinesLayout.SecondLabel
+	lstTermine.TwoLinesLayout.ItemHeight = 65dip
+	If lv.Height = 1280 And lv.Width = 800 And lv.Scale = 1 Then
+		lstTermine.SingleLineLayout.Label.TextSize = 19
+		lblLinie.TextSize = 19
+	Else
+		'lstTermine.TwoLinesLayout.ItemHeight = 50dip
+		lblLinie.TextSize = 14
+	End If
+	lblLinie.TextColor = Colors.Black
+End Sub
+
+'ausgewählten Termin bearbeiten/aktualisieren
+Sub lstTermine_ItemClick (Position As Int, Value As Object)
+	Dim sErsteZeile, sZweiteZeile As String
+	
+	Dim sStartzeit, sDauer, sKlasse, sFahrtbezeichnung, sUnterschrift, sRest, sTreffpunkt, sTermin As String
+	Dim pos As Int
+	
+	'Variable für vorhandenen Termin setzen
+	bDatenVorhanden = True
+	
+	Dim lvdTermine As ListViewData
+	lvdTermine = Value
+	
+	sErsteZeile = lvdTermine.FirstRow
+	sZweiteZeile = lvdTermine.SecondRow
+	
+	'erste Zeile aufdröseln
+	pos = sErsteZeile.IndexOf(" ")
+	sStartzeit = sErsteZeile.SubString2(0, pos).Trim
+	
+	'28.11.14 GHE: wird an dieser Stelle nicht mehr benötigt, da bei gekürzter MatchCode Anzeige kein User gefunden wird
+'	sAusgewaehlterSchueler = sErsteZeile.SubString(pos + 1)
+'	iAusgewaehlterSchuelrID = Helper.GetSchuelerID(sAusgewaehlterSchueler)
+'	lblAnzSchueler.Text = sAusgewaehlterSchueler
+
+	lblAnzDatum.Text = btKalender.Text
+	
+	'zweite Zeile aufdröseln
+	pos = sZweiteZeile.IndexOf(TAB & TAB)
+	sDauer = sZweiteZeile.SubString2(0, pos).Trim
+	sRest = sZweiteZeile.SubString(pos + 2)
+	
+	pos = sRest.IndexOf(TAB & TAB)
+	sKlasse = sRest.SubString2(0, pos).Trim
+	sRest = sRest.SubString(pos + 2)
+	
+	pos = sRest.IndexOf(TAB & TAB)
+	sFahrtbezeichnung = sRest.SubString2(0, pos).Trim
+	sRest = sRest.SubString(pos + 2)
+	
+	pos = sRest.IndexOf(TAB & TAB)
+	sUnterschrift = sRest.SubString2(0, pos).Trim
+	sTreffpunkt = sRest.SubString(pos + 2).Trim
+	
+		
+	'Daten in Tab Fahrten übernehmen und Tab aktivieren
+	lblAbfahrtAnzeige.Text = sStartzeit
+	lblEinheitAnzeige.Text = sDauer
+	sTermin = btKalender.Text
+	
+	lblAuswahlKlasse.Text = sKlasse
+	lblAuswahlFahrbezeichnung.Text = sFahrtbezeichnung
+	txtAuswahlTreffpunkt.Text = sTreffpunkt
+		
+	'Wechsel zum Fahrdaten-Tab und aktuelle TerminID holen
+	iTerminID = Helper.TerminIDHolen(sTermin, sStartzeit, sDauer, sKlasse, sFahrtbezeichnung, sTreffpunkt)
+	lblAnzSchueler.Text = sAusgewaehlterSchueler
+		
+	'KFZ holen
+	lblAuswahlKfz.Text = Helper.GetKFZ(iTerminID)
+	
+	'Bei Klasse A zusätzlich das Begleitfahrzeug ermitteln und Label für Begleitfahrzeuge aktivieren
+	If Helper.CheckBegleitfahrzeug(sKlasse) Then
+		lblAuswahlBegleitfahrzeug.Text = Helper.BegleitfahrzeugHolen(iTerminID)
+		lblAuswahlBegleitfahrzeug.Enabled = True
+		lblAuswahlBegleitfahrzeug.Color = Colors.White
+	Else
+		lblAuswahlBegleitfahrzeug.Text = ""
+		lblAuswahlBegleitfahrzeug.Enabled = False
+		lblAuswahlBegleitfahrzeug.Color = Colors.LightGray
+	End If
+	
+	'Panels setzen
+	panStart.Visible = True
+	panUnterschrift.Visible = False
+	panPruefung.Visible = False
+	
+	'Wechseln zur detailierten Ansicht des Termineintrags
+	thStart.CurrentTab = thStart.CurrentTab + 1
+End Sub
+
+'ausgewählten Termin löschen
+Sub lstTermine_ItemLongClick (Position As Int, Value As Object)
+	Dim iResult As Int
+	Dim sDatum, sFirstline As String
+	Dim lvdTermine As ListViewData
+	
+	sDatum = btKalender.Text
+	lvdTermine = Value
+	sFirstline = lvdTermine.FirstRow
+	
+	Msgbox2Async("Soll der Termineintrag '" & sFirstline & "' wirklich gelöscht werden?", "Sicherheitsabfrage", "Ja", "", "Nein", info, False)
+	Wait For Msgbox_Result(iResult As Int)
+	
+	If iResult = DialogResponse.POSITIVE Then
+		'Position in der Liste und Datum -> reicht zum löschen 
+		If (Helper.TerminLoeschen(Position, sDatum)) Then
+			ToastMessageShow("Termin erfolgreich gelöscht", False)
+		Else 
+			ToastMessageShow("Fehler beim Löschen des Termins", True)
+			Log("Fehler beim Löschen des Termins: " & sFirstline & " " & sDatum)
+		End If
+	End If
+	
+	TermineHolen(sDatum)	
+End Sub
+#End Region
+
+#Region ZahlungsAktionen
+'ausgewählte Zahlungn bearbeiten/aktualisieren
+Sub lstZahlungen_ItemClick (Position As Int, Value As Object)
+	Dim aZahlDaten() As String
+	
+	'Setzen, damit unterschieden werden kann, ob Insert oder Update einer Zahlung
+	iZahlungsPosition = Position
+	
+	If bZahlBearbeiten Then
+		If bZahlDatum = False Then
+			'ausgewählte Zahlung holen
+			aZahlDaten = Helper.ZahlungHolen(Position, Value, lblZahlDatum.Text)
+		Else
+			aZahlDaten = Helper.ZahlungHolen(Position, Value, "Alle")
+		End If
+		
+		txtZahlBetrag.Text = aZahlDaten(1)
+		lblZahlAuswahlZahlungenFuer.Text = aZahlDaten(2)
+	End If
+End Sub
+
+'ausgewählte Zahlung löschen
+Sub lstZahlungen_ItemLongClick (Position As Int, Value As Object)
+	Dim iResult As Int
+	
+	If bZahlBearbeiten Then
+		iResult = Msgbox2("Soll der Zahlungeintrag '" & Value & "' wirklich gelöscht werden?", "Sicherheitsabfrage", "Ja", "", "Nein", info)
+	
+		If iResult = DialogResponse.POSITIVE Then
+			If Helper.ZahlungLoeschen(Position, lblZahlDatum.Text) Then
+				ToastMessageShow("Zahlungeintrag gelöscht", False)
+				lblZahlZeileBearbeiten_Click
+				ZahlungenHolen(bZahlDatum)
+			End If
+		End If
+	End If
+End Sub
+
+'Laden der zahlungsrelevaten Daten
+Sub ZahlungenHolen(bAll As Boolean)
+	Dim sSumme As String
+	Dim lblLinie As Label
+	
+	lv = GetDeviceLayoutValues
+
+	lstZahlungen.ScrollingBackgroundColor = Colors.Transparent
+	
+	'erste Zeile in schwarzer Schrift
+	lblLinie = lstZahlungen.SingleLineLayout.Label	
+	lblLinie.TextColor = Colors.Black
+	
+'	If lv.Width > 320 AND lv.Height > 480 Then
+'		lstZahlungen.SingleLineLayout.ItemHeight = 25dip
+'		lblLinie.TextSize = 16
+'	Else
+		lstZahlungen.SingleLineLayout.ItemHeight = 20dip
+		lblLinie.TextSize = 14
+'	End If
+	
+	'Zahlungsliste löschen
+	lstZahlungen.Clear
+	If bAll Then
+		sSumme = Helper.ErfassteZahlungenHolen("Alle", lstZahlungen)
+	Else
+		sSumme = Helper.ErfassteZahlungenHolen(lblZahlDatum.Text, lstZahlungen)
+	End If
+	
+	If sSumme = Null Then
+		lblZahlGesamtBetrag.Text = "0.00"
+	Else
+			Dim iGesamt, iPos As Int
+			
+			'Prüfung, ob mehr als 2 Nachkommastellen und notfalls mit 0 auffüllen
+			iGesamt = sSumme.Length
+			iPos = sSumme.LastIndexOf(".")
+			
+			If iPos = -1 Then
+				lblZahlGesamtBetrag.Text = sSumme & ".00"
+			Else
+				If (iGesamt - (iPos + 1)) > 2 Then
+					lblZahlGesamtBetrag.Text = sSumme.SubString2(0, iPos + 3)
+				Else If (iGesamt - (iPos + 1)) = 1 Then
+					lblZahlGesamtBetrag.Text = sSumme & "0"
+				Else
+					lblZahlGesamtBetrag.Text = sSumme	
+				End If
+			End If
+	End If
+End Sub
+#End Region 
+
+#Region Tab-Change
+'Aufruf bzw. wechsel zum Tab "Fahrdaten"
+Sub thStart_TabChanged
+	If thStart.CurrentTab = 0 Then SonstigeTaetigkeitenAktiv(True)
+	
+	'Reset der Einstellungen 
+	If thStart.CurrentTab = 1 And bDatenVorhanden = False Then
+		lblAuswahlBegleitfahrzeug.Color = Colors.LightGray
+		lblAuswahlBegleitfahrzeug.Text = "";
+		'SchülerKlasse setzen
+		lblAuswahlKlasse.Text = Helper.GetSchuelerKlasse(iAusgewaehlterSchuelrID)
+		'Standart KFZ über Einstellungen laden
+		lblAuswahlKfz.Text = Helper.GetSelectedKFZ
+	End If
+	
+	'Abfrage, ob ein Termin ausgewählt wurde oder ob ein neuer Termin festgelegt werden soll	
+	If thStart.CurrentTab = 1 And bDatenVorhanden And bSonstTaetigkeit Then
+		'wenn Termineintragung ausgewählt und Daten schon vorhanden sind -> nur relevant, wenn Sonstige Tätigkeit modifiziert werden soll
+		SonstigeTaetigkeitenAktiv(False)
+	Else If thStart.CurrentTab = 1 And bDatenVorhanden Then
+		'nichts machen
+	Else If thStart.CurrentTab <> 1 Then
+		iTerminID = 0
+		bDatenVorhanden = False
+		btUnterschriftLoeschen_Click
+	Else 
+		'Button (Variable) für "Sontige Tätigkeiten" immer erst deaktiviert darstellen
+		SonstigeTaetigkeitenAktiv(True)
+		
+		'Variable für Terminauswahl wieder zurück setzen
+		lblAbfahrtAnzeige.Text = DateTime.Time(DateTime.Now)
+		lblEinheitAnzeige.Text = txtEinstAnzeigeFahrEinheit.Text
+		
+		'Panels setzen und UnterschriftenFeld löschen
+		panStart.Visible = True
+		panUnterschrift.Visible = False
+		panPruefung.Visible = False
+		
+		btUnterschriftLoeschen_Click
+				
+		If cbBegleitfahrzueg.Checked Then
+			'Begleitfahrzeug Auswahl anzeigen
+			lblBegleitfahrzeug.Visible = True
+			lblAuswahlBegleitfahrzeug.Visible = True
+			
+			If lblAuswahlBegleitfahrzeug.Text <> "keine Auswahl" Then
+				If Helper.CheckBegleitfahrzeug(lblAuswahlKlasse.Text) Then
+					lblAuswahlBegleitfahrzeug.Text = lstBegleitfahrzeug.GetItem(0)
+					lblAuswahlBegleitfahrzeug.Enabled = True
+					lblAuswahlBegleitfahrzeug.Color = Colors.white
+				End If
+			Else
+				lblAuswahlBegleitfahrzeug.Text = ""
+				lblAuswahlBegleitfahrzeug.Enabled = False
+				lblAuswahlBegleitfahrzeug.Color = Colors.LightGray
+			End If
+		Else
+			lblBegleitfahrzeug.Visible = False
+			lblAuswahlBegleitfahrzeug.Visible = False
+		End If
+		
+		'ausgewählten Schüler setzen und restliche Variablen wieder rücksetzen
+		Helper.AusgewaehltenSchuelerSetzen
+		lblAnzSchueler.Text = sAusgewaehlterSchueler
+		lblAnzDatum.Text = btKalender.Text
+		iTerminID = 0
+		bDatenVorhanden = False 
+	End If
+	
+	'Startseite -> zurücksetzen des ausgewählten Schülers
+	If thStart.CurrentTab = 0 Then
+		sAusgewaehlterSchueler = lblAuswahlSchueler.Text
+	End If
+	
+	'Stammdaten-Tab
+	If thStart.CurrentTab = 2 Then
+		StammdatenHolen
+		panKlassen.Visible = False
+		panStammdaten2.Visible = False
+		panStammdaten1.Visible = True
+	End If
+	
+	'Zahlungen-Tab
+	If thStart.CurrentTab = 3 Then
+		lblZahlDatum.Text = btKalender.Text
+		lblZahlSchueler.Text = sAusgewaehlterSchueler
+		
+		lblZahlGesamtBetrag.Color = Colors.ARGB(255, 144, 238, 144)	'lightgreen
+		lblZahlTag.Color = Colors.ARGB(255, 144, 238, 144)			'lightgreen
+		lblZahlAlle.Color = Colors.ARGB(255, 211, 211, 211)			'lightgray
+		
+		ZahlungenHolen(False)
+	End If
+
+	'Ausbildungskontrolle-Tab
+	If thStart.CurrentTab = 4 Then
+		'ausgewählte Felder zurücksetzen
+		Helper.ArraybIsSelected(False)
+		If aKonfig(2) Then
+			'ToDo's für BVF Diagrammkarte
+			lblSchuelerBVF.Text = sAusgewaehlterSchueler
+			Helper.SetBVFFelder(btKalender.Text, sAusgewaehlterSchueler, cbBesonderhEinsteigen, cbEinstellen, cbLenkrad, cbSpiegel, cbKopfstuetze, cbSitz, cbLenkradhaltung, cbPedale, cbGurt, cbSchaltWaehlhebel, cbZuendschloss, cbMotorAnlassen, _
+										cbAnfahrAnhalte, cbSchaltuebg, cbHoch1_2, cbHoch2_3, cbHoch3_4, cbRunter4_3, cbRunter3_2, cbRunter2_1, cbRunter4_2, cbRunter4_1, cbRunter3_1, cbLenkuebung, cbUmkehren, cbEinparkenLaengs, _
+										cbLVorwaertsRechts, cbLRueckwaertsLinks, cbLRueckwaertsRechts, cbLVorwaertsLinks, cbRueckwaertsfahren, cbEinparkenQuer, cbQVorwaertsRechts, cbQRueckwaertsLinks, _
+										cbQRueckwaertsRechts, cbQVorwaertsLinks, cbGefahrbremsung, cbRollenSchalten, cbBremsSchalten, cbBremsuebung, cbDegressiv, cbZielbremsung, cbGefahrsituation, cbGefaelle, _
+										cbAnhalten, cbAnfahren, cbRueckwaerts, cbSichern, cbSchalten, cbSteigung, cbStAnhalten, cbStAnfahren, cbStRueckwaerts, cbStSichern, cbStSchalten, cbTastgeschw, cbBedienKontroll, _
+										cbOertlichBesonder, cbFahrbahnbenutzung, cbEinordnen, cbMarkierungen, cbFahrstreifenwechsel, cbLinks, cbRechts, cbVorbeifUeberholen, cbAbbiegen, cbABRechts, cbABLinks, cbMehrspurig, _
+										cbRadweg, cbSonderstreifen, cbStrassenbahn, cbEinbahnstrasse, cbVorfahrt, cbRechtsVorLinks, cbGruenpfeil, cbPolizeibeamte, cbGruenpfeilSchild, cbGeschwAbstand, cbSituationVerkehrstn, _
+										cbFussgaengerueberweg, cbOeffentlVerkehrsm, cbAeltereBehinderte, cbEinbahnstrRadfahrer, cbKinder, cbSchulbus, cbRadfahrerMofa, cbVerkehrsberuhigt, cbSchwierigeVerkehrsf, cbEngpass, _
+										cbKreisverkehr, cbBahnuebergangWarte, cbKritischeVerkehrss, cbHauptverkehrszt, cbPartnerVerhalten, cbSchwungNutzen, cbFussgaengerSchutzb, cbAngepassteGeschw, cbAbstand, cbULVorne, _
+										cbULHinten, cbULSeitlich, cbBeobachtSpiegel, cbVerkehrszeichen, cbKreuzungEinmuend, cbKurven, cbSteigungen, cbULGefaelle, cbAlleen, cbUeberholen, cbBesondereSituat, cbLiegenblSichern, _
+										cbEinfahrenOrtsch, cbFussgaenger, cbWildTiere, cbBesondereAnford, cbLeistungsgrenze, cbOrientierung, cbAblenkung, cbFahrtplanung, cbEinfahrtAB, cbABFahrbahnwechsel, cbGeschwindigkeit, _
+										cbABAbstand, cbABVorne, cbABHinten, cbABSeitlich, cbABUeberholen, cbSchilder, cbVorbeifahren, cbRastParkTank, cbVerhUnfall, cbDichterVerkehr, cbBesonderSituat, cbBesonderAnford, _
+										cbABLeistungsgrenze, cbKonfliktSitua, cbABAblenkung, cbBeleuchtung, cbKontrolle, cbEinstell, cbBenutzung, cbFernlicht, cbVerlassenBAB, cbBeleuchtStrasse, cbUnbeleuchtStrasse, cbParken, cbDUBesonderSituat, _
+										cbSchlechteWitterung, cbTiere, cbBahnuebergaenge, cbUnbelVerkehrTN, cbDUBesonderAnfor, cbBlendung, cbDUOrientierung, cbAbschlussbesp, cbSelbstFahren, cbInnerorts, cbAusserorts, cbVerantwFahren, cbTestfPruef, _
+										cbFAKT, cbAndere, cbWiederholung, cbLeistungsbew, cbReifen, cbEinAusschalten, cbFunktionPruefen, cbStandlicht, cbNebelschluss, cbBlinker, cbAbblendlicht, cbWarnblicke, cbHupe, cbBSFernlicht, cbSchlussLeuchte, _
+										cbBremslicht, cbKontrollLBenenn, cbRueckstrahler, cbVorhandensein, cbBeschaedigung, cbLenkung, cbLenkschlEntriegeln, cbPruefLenkSpiel, cbFunktBremse, cbBetriebsBremse, cbFeststellBremse, _
+										cbAnlegenGurt, cbRichtigSitz, cbEinstellRueckspiegel, cbEinKopfstuetze, cbEinLenkrad, cbBedienenAgg, cbHeizung, cbHeckHeizung, cbBehSonderaus, cbLueftung, cbKlimaanlage, cbEnergieNutzung, _
+										cbKeineUnnVerbr, cbRechtztAbsch, cbMotorraum, cbMotoroel, cbKuehlmittel, cbScheibenwaschm, cbTanken, cbBremsen, cbSicherungsmittel, cbWarndreieck, cbBordwerkzeug, cbZusaetzlichAus, cbVerbandskasten, cbAussenkontrolle, _
+										cbScheibenWischer, cbKennzeichen, cbCheckSpiegel, cbCheckBeleuchtung, cbLadung, cbLadungssicherung, cbKenntlichmachung, cbFahreSchlWitt, cbWittLueftung, cbWittScheiben, cbRegen, _
+										cbWasserlachen, cbWindSturm, cbMatchSchnee, cbEis, cbWittBeleuchtung, etNotizen)
+		Else
+			Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+				lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+				lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+				lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+				lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+				lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+			'ausgewählten Schüler anzeigen
+			lblAusbildungSchueler.Text = sAusgewaehlterSchueler
+			
+			'erste Zeile in schwarzer Schrift
+			Dim lblLinieThemen, lblLiniePunkte As Label
+			
+			lblLinieThemen = lstAusbildungLernThemen.SingleLineLayout.Label
+			lblLiniePunkte = lstAusbildungLernPunkte.SingleLineLayout.Label
+			
+			'Layoutgröße prüfen
+			If lv.Width > 320 And lv.Height > 480 Then
+				lblLinieThemen.TextSize = 16
+				lblLiniePunkte.TextSize = 16
+				lstAusbildungLernThemen.SingleLineLayout.ItemHeight = panAusbildung.Height / 10
+				lstAusbildungLernPunkte.SingleLineLayout.ItemHeight = panAusbildung.Height / 10
+			Else
+				lblLinieThemen.TextSize = 15
+				lblLiniePunkte.TextSize = 15
+				lstAusbildungLernThemen.SingleLineLayout.ItemHeight = 22		
+				lstAusbildungLernPunkte.SingleLineLayout.ItemHeight = 22
+			End If
+			
+			lblLinieThemen.TextColor = Colors.Black
+			lblLiniePunkte.TextColor = Colors.Black
+			
+			Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, 1)
+			Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, 1)
+		End If
+	End If
+	
+	'Einstellung-Tab
+	If thStart.CurrentTab = 5 Then
+		lblEinstAnzeigeKfz.Text = Helper.GetSelectedKFZ
+	End If
+End Sub
+#End Region 
+
+#Region sämtliche Stammdaten-Aktionen
+'Laden der Stammdaten des Users
+Sub StammdatenHolen
+	Dim aStammdaten() As String
+	aStammdaten = Helper.StammdatenHolen
+	
+	'Daten für erstes Panel
+	lblStammdatenName.Text = sAusgewaehlterSchueler
+	lblStammdatenAnschrift.Text = aStammdaten(0) & " " & aStammdaten(1)
+	lblStammdatenOrt.Text = aStammdaten(2) & " " & aStammdaten(3)
+	lblStammTelefon.Text = aStammdaten(4)
+	lblStammHandy.Text = aStammdaten(5)
+	lblStammEmail.Text = aStammdaten(6)
+	lblStammArbeitsstelle.Text = aStammdaten(7)
+	lblStammTelefonArbeit.Text = aStammdaten(8)
+	lblStammKlassen.Text = aStammdaten(9)
+	lblStammHatKlasse.Text = aStammdaten(10)
+	
+	'Daten für zweites Panel
+	lblStammKontostand.Text = aStammdaten(11)
+	lblStammAntragEingereicht.Text = aStammdaten(12)
+	lblStammAntragZurueck.Text = aStammdaten(13)
+	lblStammGeburtstag.Text = aStammdaten(14)
+	lblStammNationalitaet.Text = aStammdaten(15)
+	lblStammAnmeldung.Text = aStammdaten(16)
+	lblStammSchuleFiliale.Text = aStammdaten(17)
+	
+End Sub
+
+'Wechseln zur Stammdatenerweiterung (Panal2)
+Sub lblStammdaten1_Click
+	panStammdaten2.Visible = False
+	panKlassen.Visible = False
+	panStammdaten1.Visible = True
+End Sub
+
+Sub lblStammdaten2_Click
+	panStammdaten1.Visible = False
+	panKlassen.Visible = False
+	panStammdaten2.Visible = True
+End Sub
+
+Sub lblKlasse1_Click
+	panStammdaten1.Visible = False
+	panStammdaten2.Visible = False
+	
+	Helper.ZaehlerKlassenAnzeige(1, lblKlassenbezeichnung)
+	panKlassen.Visible = True
+	
+	Dim aKlassendaten() As String
+	aKlassendaten = Helper.StammdatenKlassendatenHolen(1)
+	
+	KlassenFelderFuellen(aKlassendaten)
+End Sub
+
+Sub lblKlasse2_Click
+	panStammdaten1.Visible = False
+	panStammdaten2.Visible = False
+	
+	Helper.ZaehlerKlassenAnzeige(2, lblKlassenbezeichnung)
+	panKlassen.Visible = True
+	
+	Dim aKlassendaten() As String
+	aKlassendaten = Helper.StammdatenKlassendatenHolen(2)
+	
+	KlassenFelderFuellen(aKlassendaten)
+End Sub
+
+Sub lblKlasse3_Click
+	panStammdaten1.Visible = False
+	panStammdaten2.Visible = False
+	
+	Helper.ZaehlerKlassenAnzeige(3, lblKlassenbezeichnung)
+	panKlassen.Visible = True
+	
+	Dim aKlassendaten() As String
+	aKlassendaten = Helper.StammdatenKlassendatenHolen(3)
+	
+	KlassenFelderFuellen(aKlassendaten)
+End Sub
+
+Sub lblKlasse4_Click
+	panStammdaten1.Visible = False
+	panStammdaten2.Visible = False
+	
+	Helper.ZaehlerKlassenAnzeige(4, lblKlassenbezeichnung)
+	panKlassen.Visible = True
+	
+	Dim aKlassendaten() As String
+	aKlassendaten = Helper.StammdatenKlassendatenHolen(4)
+	
+	KlassenFelderFuellen(aKlassendaten)
+End Sub
+
+Sub KlassenFelderFuellen(aKlassendaten() As String)
+	'Daten für Klassen-Panels
+	lblKlasseAnzeigeGrundstoff.Text = lblStammKlassen.Text
+	lblKlasseAnzeigeDoppelstunde.Text = aKlassendaten(0)
+	lblKlasseAnzeigeSpezifisch.Text = aKlassendaten(1)
+	lblKlasseAnzeigeBezeichnung.Text = aKlassendaten(2)
+		
+	'Label 'in Ausbildung' nur anzeigen wenn in diesem Feld etwas steht
+	If lblKlasseAnzeigeBezeichnung.Text = "" Then
+		lblKlasseAusbildungsstand.Visible = False
+	Else
+		lblKlasseAusbildungsstand.Visible = True
+		lblKlasseAusbildungsstand.Text = aKlassendaten(3)
+	End If
+	
+	lblKlasseAnzeigeUebungsfahrt.Text = aKlassendaten(4)
+	lblKlasseAnzeigeUebungGrund.Text = aKlassendaten(5)
+	lblKlasseAnzeigeUeberland.Text = aKlassendaten(6)
+	lblKlasseAnzeigeAutobahn.Text = aKlassendaten(7)
+	lblKlasseAnzeigeNachtfaht.Text = aKlassendaten(8)
+	lblKlasseAnzeigeUnterweisungFhrzg.Text = aKlassendaten(9)
+	lblKlasseAnzeigeTheorPruefung.Text = aKlassendaten(10)
+	lblKlasseAnzeigePraktischePruefung.Text = aKlassendaten(11)
+End Sub
+#End Region 
+
+#Region Konfiguration
+'Konfiguration: Einstellung ob Begleitfahrzeug angezeigt werden soll
+Sub cbBegleitfahrzueg_CheckedChange(Checked As Boolean)
+	'Speichern des Zustandes der Konfiguration
+	Helper.SetKonfig(Checked, "cbBegleitfahrzueg")
+End Sub
+
+'Konfiguration: Prüfungsergebnis erfassen
+Sub cbPruefungsErgebnis_CheckedChange(Checked As Boolean)
+	Helper.SetKonfig(Checked, "cbPruefungsErgebnis")
+	'@GHE: ToDo -> Prüfungsergbnis abfragen bei Auswahl Prüfung (bei Fahrtermine erfassen)
+End Sub
+
+#End Region 
+
+#Region Ausbildungskontrolle
+'Ausbildugskontrolle: Listview Zeile 1
+Sub lblAusbildungListeZeile1_Click()
+	
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+		
+	If bIsSelected(0) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile1, lblAusbildungListeZusatz1)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(0)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(0)
+		sEintrag = lstAusbildungLernPunkte.GetItem(0)
+		
+		lblAusbildungListeZeile1.Text = sAnzeige 
+		lblAusbildungListeZusatz1.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(0) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 1
+Sub lblAusbildungListeZusatz1_Click
+	lblAusbildungListeZeile1_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 2
+Sub lblAusbildungListeZeile2_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(1) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else
+		Helper.SetLabelLayout(lblAusbildungListeZeile2, lblAusbildungListeZusatz2)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(0)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(1)
+		sEintrag = lstAusbildungLernPunkte.GetItem(1)
+		
+		lblAusbildungListeZeile2.Text = sAnzeige 
+		lblAusbildungListeZusatz2.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(1) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 2
+Sub lblAusbildungListeZusatz2_Click
+	lblAusbildungListeZeile2_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 3
+Sub lblAusbildungListeZeile3_Click
+	
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(2) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile3, lblAusbildungListeZusatz3)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(2)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(2)
+		sEintrag = lstAusbildungLernPunkte.GetItem(2)
+		
+		lblAusbildungListeZeile3.Text = sAnzeige 
+		lblAusbildungListeZusatz3.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(2) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 3
+Sub lblAusbildungListeZusatz3_Click
+	lblAusbildungListeZeile3_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 4
+Sub lblAusbildungListeZeile4_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(3) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile4, lblAusbildungListeZusatz4)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(3)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(3)
+		sEintrag = lstAusbildungLernPunkte.GetItem(3)
+		
+		lblAusbildungListeZeile4.Text = sAnzeige 
+		lblAusbildungListeZusatz4.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(3) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 4
+Sub lblAusbildungListeZusatz4_Click
+	lblAusbildungListeZeile4_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 5
+Sub lblAusbildungListeZeile5_Click
+	
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(4) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile5, lblAusbildungListeZusatz5)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(4)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(4)
+		sEintrag = lstAusbildungLernPunkte.GetItem(4)
+		
+		lblAusbildungListeZeile5.Text = sAnzeige 
+		lblAusbildungListeZusatz5.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(4) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 5
+Sub lblAusbildungListeZusatz5_Click
+	lblAusbildungListeZeile5_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 6
+Sub lblAusbildungListeZeile6_Click
+	
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(5) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile6, lblAusbildungListeZusatz6)
+
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(5)
+
+		sAnzeige = lstAusbildungLernThemen.GetItem(5)
+		sEintrag = lstAusbildungLernPunkte.GetItem(5)
+
+		lblAusbildungListeZeile6.Text = sAnzeige 
+		lblAusbildungListeZusatz6.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(5) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 6
+Sub lblAusbildungListeZusatz6_Click
+	lblAusbildungListeZeile6_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 7
+Sub lblAusbildungListeZeile7_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(6) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile7, lblAusbildungListeZusatz7)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(5)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(6)
+		sEintrag = lstAusbildungLernPunkte.GetItem(6)
+		
+		lblAusbildungListeZeile7.Text = sAnzeige 
+		lblAusbildungListeZusatz7.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(6) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 7
+Sub lblAusbildungListeZusatz7_Click
+	lblAusbildungListeZeile7_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 8
+Sub lblAusbildungListeZeile8_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(7) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile8, lblAusbildungListeZusatz8)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(7)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(7)
+		sEintrag = lstAusbildungLernPunkte.GetItem(7)
+		
+		lblAusbildungListeZeile8.Text = sAnzeige 
+		lblAusbildungListeZusatz8.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(7) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 8
+Sub lblAusbildungListeZusatz8_Click
+	lblAusbildungListeZeile8_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 9
+Sub lblAusbildungListeZeile9_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+			
+	If bIsSelected(8) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else
+		Helper.SetLabelLayout(lblAusbildungListeZeile9, lblAusbildungListeZusatz9)
+				
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(8)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(8)
+		sEintrag = lstAusbildungLernPunkte.GetItem(8)
+		
+		lblAusbildungListeZeile9.Text = sAnzeige 
+		lblAusbildungListeZusatz9.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(8) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 9
+Sub lblAusbildungListeZusatz9_Click
+	lblAusbildungListeZeile9_Click
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 10
+Sub lblAusbildungListeZeile10_Click
+		
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	If bIsSelected(9) Then
+		lblAusbildungListeZeile1.Text = ""
+		lblAusbildungListeZeile1.Color = Colors.Transparent
+		lblAusbildungListeZusatz1.Text = ""
+		lblAusbildungListeZusatz1.Color = Colors.Transparent
+		
+		Helper.ArraybIsSelected(False)
+	Else		
+		Helper.SetLabelLayout(lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+		
+		Dim sAnzeige, sEintrag As String
+		'Dim iPos As Int
+		lstAusbildungLernPunkte.SetSelection(9)
+		
+		sAnzeige = lstAusbildungLernThemen.GetItem(9)
+		sEintrag = lstAusbildungLernPunkte.GetItem(9)
+		
+		lblAusbildungListeZeile10.Text = sAnzeige 
+		lblAusbildungListeZusatz10.text = sEintrag
+		
+		Helper.ArraybIsSelected(False)
+		bIsSelected(9) = True
+	End If
+End Sub
+
+'Ausbildugskontrolle: Listview Zeile 10
+Sub lblAusbildungListeZusatz10_Click
+	lblAusbildungListeZeile10_Click
+End Sub
+
+'Ausbildung: rechte Leiste der Kategorisierung
+Sub lblAusbildung0_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 1
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 1
+Sub lblAusbildung1_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+		
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 2
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 2
+Sub lblAusbildung2_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+		
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 3
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 3
+Sub lblAusbildung3_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 4
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 4
+Sub lblAusbildung4_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+		
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 5
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 5
+Sub lblAusbildung5_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 6
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'Ausbildung: rechte Seite 6
+Sub lblAusbildung6_Click
+	Helper.AusbildungsAnzeigenLoeschen(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, _
+		lblAusbildungListeZeile2, lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, _
+		lblAusbildungListeZeile4, lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, _
+		lblAusbildungListeZeile6, lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, _
+		lblAusbildungListeZeile8, lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, _
+		lblAusbildungListeZeile10, lblAusbildungListeZusatz10)
+	
+	'Zuordnung welcher Bereich ausgewählt ist
+	iAusbildungBereich = 7
+	
+	Helper.FillAusbildungLernThemenListView(lstAusbildungLernThemen, iAusbildungBereich)
+	Helper.FillAusbildungLernPunkteListView(lstAusbildungLernPunkte, sAusgewaehlterSchueler, iAusbildungBereich)
+End Sub
+
+'eine Kategorie weiter
+Sub lblAusbildungPlus_Click
+    Select  iAusbildungBereich
+            Case 1   
+                lblAusbildung1_Click
+            Case 2   
+                lblAusbildung2_Click
+            Case 3
+                lblAusbildung3_Click
+            Case 4   
+                lblAusbildung4_Click
+            Case 5
+                lblAusbildung5_Click
+            Case 6   
+                lblAusbildung6_Click
+            Case 7   
+                lblAusbildung0_Click
+    End Select
+End Sub
+
+'eine Kategorie zurück
+Sub lblAusbildungMinus_Click
+    Select  iAusbildungBereich
+            Case 1   
+                lblAusbildung6_Click
+            Case 2   
+                lblAusbildung0_Click
+            Case 3
+                lblAusbildung1_Click
+            Case 4   
+                lblAusbildung2_Click
+            Case 5
+                lblAusbildung3_Click
+            Case 6   
+                lblAusbildung4_Click
+            Case 7   
+                lblAusbildung5_Click
+    End Select
+End Sub
+
+'Ausbildung: untere Auswahlpunkte
+Sub lblAusbildungZahlX_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahlX.Text)
+			
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next 
+End Sub
+
+Sub lblAusbildungZahlAusrufe_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahlAusrufe.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahlMinus_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahlMinus.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahlPlus_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahlPlus.Text)
+						
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahlDel_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahlDel.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl0_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl0.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl1_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl1.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl2_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl2.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl3_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl3.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl4_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl4.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl5_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl5.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+
+Sub lblAusbildungZahl6_Click
+	For i = 0 To bIsSelected.Length - 1
+		If bIsSelected(i) Then
+			Helper.AusbildungZustandAendern(lblAusbildungListeZeile1, lblAusbildungListeZusatz1, lblAusbildungListeZeile2, _
+				lblAusbildungListeZusatz2, lblAusbildungListeZeile3, lblAusbildungListeZusatz3, lblAusbildungListeZeile4, _
+				lblAusbildungListeZusatz4, lblAusbildungListeZeile5, lblAusbildungListeZusatz5, lblAusbildungListeZeile6, _
+				lblAusbildungListeZusatz6, lblAusbildungListeZeile7, lblAusbildungListeZusatz7, lblAusbildungListeZeile8, _
+				lblAusbildungListeZusatz8, lblAusbildungListeZeile9, lblAusbildungListeZusatz9, lblAusbildungListeZeile10, _
+				lblAusbildungListeZusatz10, lblAusbildungZahl6.Text)
+							
+			Select iAusbildungBereich
+	          Case 1
+	        	lblAusbildung0_Click
+	          Case 2
+	        	lblAusbildung1_Click
+	          Case 3
+	        	lblAusbildung2_Click
+	          Case 4
+	        	lblAusbildung3_Click
+			  Case 5
+			  	lblAusbildung4_Click
+			  Case 6
+			  	lblAusbildung5_Click
+			  Case 7
+			  	lblAusbildung6_Click
+	     	End Select
+		End If
+	Next
+End Sub
+#End Region
+
+#region Ausbildung BVF
+Private Sub lblAusbildungBVF0_Click
+	iAusbildungBereich = iAusbildungBereich + 1
+	
+	If iAusbildungBereich > 20 Then
+		iAusbildungBereich = 1
+	Else If iAusbildungBereich < 1 Then
+		iAusbildungBereich = 20
+	End If
+	
+	ShowBVFTabs
+End Sub
+
+Private Sub lblAusbildungBVF1_Click
+	iAusbildungBereich = iAusbildungBereich - 1
+	
+	If iAusbildungBereich > 20 Then
+		iAusbildungBereich = 1
+	Else If iAusbildungBereich < 1 Then
+		iAusbildungBereich = 20
+	End If
+	
+	ShowBVFTabs
+End Sub
+
+Sub ShowBVFTabs()
+	pan20.Visible = False
+	Select iAusbildungBereich
+		Case 1
+			lblGrundstufe.Text = "Grundstufe"
+			pan0.Visible = True
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 2
+			lblGrundstufe.Text = "Grundstufe"
+			pan0.Visible = False
+			pan1.Visible = True
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 3
+			lblGrundstufe.Text = "Grundfahraufgaben"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = True
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 4
+			lblGrundstufe.Text = "Aufbaustufe"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = True
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 5
+			lblGrundstufe.Text = "Aufbaustufe"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = True
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 6
+			lblGrundstufe.Text = "Leistungsstufe"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = True
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 7
+			lblGrundstufe.Text = "Leistungsstufe"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = True
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 8
+			lblGrundstufe.Text = "Leistungsstufe"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = True
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 9
+			lblGrundstufe.Text = "Überland"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = True
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 10
+			lblGrundstufe.Text = "Überland"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = True
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 11
+			lblGrundstufe.Text = "Autobahn"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = True
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 12
+			lblGrundstufe.Text = "Autobahn"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = True
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 13
+			lblGrundstufe.Text = "Dämmerung/Dunkelheit"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = True
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 14
+			lblGrundstufe.Text = "Reife- und Testprüfung"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = True
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 15
+			lblGrundstufe.Text = "Situative Bausteine"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = True
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 16
+			lblGrundstufe.Text = "Situative Bausteine"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = True
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 17
+			lblGrundstufe.Text = "Checkliste zur fahrtechnischen Vorbereitung"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = True
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 18
+			lblGrundstufe.Text = "Heizung und Lüftung"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = True
+			pan18.Visible = False
+			pan19.Visible = False
+		Case 19
+			lblGrundstufe.Text = "Betriebs- und Verkehrssicherheit"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = True
+			pan19.Visible = False
+		Case 20
+			lblGrundstufe.Text = "Witterung"
+			pan0.Visible = False
+			pan1.Visible = False
+			pan2.Visible = False
+			pan3.Visible = False
+			pan4.Visible = False
+			pan5.Visible = False
+			pan6.Visible = False
+			pan7.Visible = False
+			pan8.Visible = False
+			pan9.Visible = False
+			pan10.Visible = False
+			pan11.Visible = False
+			pan12.Visible = False
+			pan13.Visible = False
+			pan14.Visible = False
+			pan15.Visible = False
+			pan16.Visible = False
+			pan17.Visible = False
+			pan18.Visible = False
+			pan19.Visible = True
+	End Select
+End Sub
+
+Private Sub lblAusbildungBVF2_Click
+	lblGrundstufe.Text = "Notizen"
+	pan0.Visible = False
+	pan1.Visible = False
+	pan2.Visible = False
+	pan3.Visible = False
+	pan4.Visible = False
+	pan5.Visible = False
+	pan6.Visible = False
+	pan7.Visible = False
+	pan8.Visible = False
+	pan9.Visible = False
+	pan10.Visible = False
+	pan11.Visible = False
+	pan12.Visible = False
+	pan13.Visible = False
+	pan14.Visible = False
+	pan15.Visible = False
+	pan16.Visible = False
+	pan17.Visible = False
+	pan18.Visible = False
+	pan19.Visible = False
+	
+	pan20.Visible = True
+End Sub
+
+Private Sub lblAusbildungBVF3_Click
+	Msgbox2Async("Möchten Sie die Daten zum '" & btKalender.Text & "' speichern?", "BVF Daten speichern", "Ja", "", "Nein", Null, False)
+	Wait For msgbox_Result(iResult As Int)
+	If iResult = DialogResponse.POSITIVE Then
+		If Helper.InsertUpdateBVFData(btKalender.Text, sAusgewaehlterSchueler, cbBesonderhEinsteigen.Checked, cbEinstellen.Checked, cbLenkrad.Checked, cbSpiegel.Checked, cbKopfstuetze.Checked, cbSitz.Checked, cbLenkradhaltung.Checked, cbPedale.Checked, cbGurt.Checked, cbSchaltWaehlhebel.Checked, cbZuendschloss.Checked, cbMotorAnlassen.Checked, _
+										cbAnfahrAnhalte.Checked, cbSchaltuebg.Checked, cbHoch1_2.Checked, cbHoch2_3.Checked, cbHoch3_4.Checked, cbRunter4_3.Checked, cbRunter3_2.Checked, cbRunter2_1.Checked, cbRunter4_2.Checked, cbRunter4_1.Checked, cbRunter3_1.Checked, cbLenkuebung.Checked, cbUmkehren.Checked, cbEinparkenLaengs.Checked, _
+										cbLVorwaertsRechts.Checked, cbLRueckwaertsLinks.Checked, cbLRueckwaertsRechts.Checked, cbLVorwaertsLinks.Checked, cbRueckwaertsfahren.Checked, cbEinparkenQuer.Checked, cbQVorwaertsRechts.Checked, cbQRueckwaertsLinks.Checked, _
+										cbQRueckwaertsRechts.Checked, cbQVorwaertsLinks.Checked, cbGefahrbremsung.Checked, cbRollenSchalten.Checked, cbBremsSchalten.Checked, cbBremsuebung.Checked, cbDegressiv.Checked, cbZielbremsung.Checked, cbGefahrsituation.Checked, cbGefaelle.Checked, _
+										cbAnhalten.Checked, cbAnfahren.Checked, cbRueckwaerts.Checked, cbSichern.Checked, cbSchalten.Checked, cbSteigung.Checked, cbStAnhalten.Checked, cbStAnfahren.Checked, cbStRueckwaerts.Checked, cbStSichern.Checked, cbStSchalten.Checked, cbTastgeschw.Checked, cbBedienKontroll.Checked, _
+										cbOertlichBesonder.Checked, cbFahrbahnbenutzung.Checked, cbEinordnen.Checked, cbMarkierungen.Checked, cbFahrstreifenwechsel.Checked, cbLinks.Checked, cbRechts.Checked, cbVorbeifUeberholen.Checked, cbAbbiegen.Checked, cbABRechts.Checked, cbABLinks.Checked, cbMehrspurig.Checked, _
+										cbRadweg.Checked, cbSonderstreifen.Checked, cbStrassenbahn.Checked, cbEinbahnstrasse.Checked, cbVorfahrt.Checked, cbRechtsVorLinks.Checked, cbGruenpfeil.Checked, cbPolizeibeamte.Checked, cbGruenpfeilSchild.Checked, cbGeschwAbstand.Checked, cbSituationVerkehrstn.Checked, _
+										cbFussgaengerueberweg.Checked, cbOeffentlVerkehrsm.Checked, cbAeltereBehinderte.Checked, cbEinbahnstrRadfahrer.Checked, cbKinder.Checked, cbSchulbus.Checked, cbRadfahrerMofa.Checked, cbVerkehrsberuhigt.Checked, cbSchwierigeVerkehrsf.Checked, cbEngpass.Checked, _
+										cbKreisverkehr.Checked, cbBahnuebergangWarte.Checked, cbKritischeVerkehrss.Checked, cbHauptverkehrszt.Checked, cbPartnerVerhalten.Checked, cbSchwungNutzen.Checked, cbFussgaengerSchutzb.Checked, cbAngepassteGeschw.Checked, cbAbstand.Checked, cbULVorne.Checked, _
+										cbULHinten.Checked, cbULSeitlich.Checked, cbBeobachtSpiegel.Checked, cbVerkehrszeichen.Checked, cbKreuzungEinmuend.Checked, cbKurven.Checked, cbSteigungen.Checked, cbULGefaelle.Checked, cbAlleen.Checked, cbUeberholen.Checked, cbBesondereSituat.Checked, cbLiegenblSichern.Checked, _
+										cbEinfahrenOrtsch.Checked, cbFussgaenger.Checked, cbWildTiere.Checked, cbBesondereAnford.Checked, cbLeistungsgrenze.Checked, cbOrientierung.Checked, cbAblenkung.Checked, cbFahrtplanung.Checked, cbEinfahrtAB.Checked, cbABFahrbahnwechsel.Checked, cbGeschwindigkeit.Checked, _
+										cbABAbstand.Checked, cbABVorne.Checked, cbABHinten.Checked, cbABSeitlich.Checked, cbABUeberholen.Checked, cbSchilder.Checked, cbVorbeifahren.Checked, cbRastParkTank.Checked, cbVerhUnfall.Checked, cbDichterVerkehr.Checked, cbBesonderSituat.Checked, cbBesonderAnford.Checked, _
+										cbABLeistungsgrenze.Checked, cbKonfliktSitua.Checked, cbABAblenkung.Checked, cbBeleuchtung.Checked, cbKontrolle.Checked, cbEinstell.Checked, cbBenutzung.Checked, cbFernlicht.Checked, cbVerlassenBAB.Checked, cbBeleuchtStrasse.Checked, cbUnbeleuchtStrasse.Checked, cbParken.Checked, cbDUBesonderSituat.Checked, _
+										cbSchlechteWitterung.Checked, cbTiere.Checked, cbBahnuebergaenge.Checked, cbUnbelVerkehrTN.Checked, cbDUBesonderAnfor.Checked, cbBlendung.Checked, cbDUOrientierung.Checked, cbAbschlussbesp.Checked, cbSelbstFahren.Checked, cbInnerorts.Checked, cbAusserorts.Checked, cbVerantwFahren.Checked, cbTestfPruef.Checked, _
+										cbFAKT.Checked, cbAndere.Checked, cbWiederholung.Checked, cbLeistungsbew.Checked, cbReifen.Checked, cbEinAusschalten.Checked, cbFunktionPruefen.Checked, cbStandlicht.Checked, cbNebelschluss.Checked, cbBlinker.Checked, cbAbblendlicht.Checked, cbWarnblicke.Checked, cbHupe.Checked, cbBSFernlicht.Checked, cbSchlussLeuchte.Checked, _
+										cbBremslicht.Checked, cbKontrollLBenenn.Checked, cbRueckstrahler.Checked, cbVorhandensein.Checked, cbBeschaedigung.Checked, cbLenkung.Checked, cbLenkschlEntriegeln.Checked, cbPruefLenkSpiel.Checked, cbFunktBremse.Checked, cbBetriebsBremse.Checked, cbFeststellBremse.Checked, _
+										cbAnlegenGurt.Checked, cbRichtigSitz.Checked, cbEinstellRueckspiegel.Checked, cbEinKopfstuetze.Checked, cbEinLenkrad.Checked, cbBedienenAgg.Checked, cbHeizung.Checked, cbHeckHeizung.Checked, cbBehSonderaus.Checked, cbLueftung.Checked, cbKlimaanlage.Checked, cbEnergieNutzung.Checked, _
+										cbKeineUnnVerbr.Checked, cbRechtztAbsch.Checked, cbMotorraum.Checked, cbMotoroel.Checked, cbKuehlmittel.Checked, cbScheibenwaschm.Checked, cbTanken.Checked, cbBremsen.Checked, cbSicherungsmittel.Checked, cbWarndreieck.Checked, cbBordwerkzeug.Checked, cbZusaetzlichAus.Checked, cbVerbandskasten.Checked, cbAussenkontrolle.Checked, _
+										cbScheibenWischer.Checked, cbKennzeichen.Checked, cbCheckSpiegel.Checked, cbCheckBeleuchtung.Checked, cbLadung.Checked, cbLadungssicherung.Checked, cbKenntlichmachung.Checked, cbFahreSchlWitt.Checked, cbWittLueftung.Checked, cbWittScheiben.Checked, cbRegen.Checked, _
+										cbWasserlachen.Checked, cbWindSturm.Checked, cbMatchSchnee.Checked, cbEis.Checked, cbWittBeleuchtung.Checked, etNotizen.Text) Then
+			ToastMessageShow("Daten wurden gespeichert!", False)
+		Else
+			ToastMessageShow("Fehler beim speichern der Daten!", True)
+		End If
+	End If
+End Sub
+
+Private Sub lblAusbildungBVF4_Click
+
+End Sub
+
+Private Sub lblAusbildungBVF5_Click
+	
+End Sub
+
+Private Sub lblAusbildungBVF6_Click
+	
+End Sub
+#End Region
+
+#Region Telefon Aktionen (anrufen, mailen, ...)
+'Stammdaten: Telefon anruf startet
+Sub lblStammTelefon_Click
+	Dim calls As PhoneCalls
+	Dim phone As String
+	
+	phone = lblStammTelefon.Text
+	If phone <> "" Then
+		rp.CheckAndRequest(rp.PERMISSION_CALL_PHONE)
+		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+		If Result Then
+			Msgbox2Async("Möchten Sie den Schüler '" & sAusgewaehlterSchueler & "' anrufen?", "Anruf", "Ja", "", "Nein", Null, False)
+			Wait For msgbox_Result(iResult As Int)
+			If iResult = DialogResponse.POSITIVE Then
+				Try
+					StartActivity(calls.Call(phone))
+				Catch
+					Log("Anruf klappt nicht")
+				End Try
+			End If
+		Else
+			Log("Keine Berechtigung zum Telefonieren")
+		End If
+	End If
+End Sub
+
+'Stammdaten: Handynumemr anrufen
+Sub lblStammHandy_Click
+	Dim calls As PhoneCalls
+	Dim phone As String
+	
+	phone = lblStammHandy.Text
+	If phone <> "" Then
+		rp.CheckAndRequest(rp.PERMISSION_CALL_PHONE)
+		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+		If Result Then
+			Msgbox2Async("Möchten Sie den Schüler '" & sAusgewaehlterSchueler & "' anrufen?", "Anruf", "Ja", "", "Nein", Null, False)
+			Wait For Msgbox_Result(iResult As Int)
+			'DoEvents
+			If iResult = DialogResponse.POSITIVE Then
+				Try
+					StartActivity(calls.Call(phone))
+				Catch
+					Log("Anruf klappt nicht")
+				End Try
+			End If
+		Else
+			Log("Keine Berechtigung zum Telefonieren")
+		End If
+	End If	
+End Sub
+
+'Stammdaten: geschäftliche Nummer anrufen
+Sub lblStammTelefonArbeit_Click
+	Dim calls As PhoneCalls
+	Dim phone As String
+		
+	phone = lblStammTelefonArbeit.Text
+	If phone <> "" Then
+		rp.CheckAndRequest(rp.PERMISSION_CALL_PHONE)
+		Wait For Activity_PermissionResult (Permission As String, Result As Boolean)
+		If Result Then
+			Msgbox2Async("Möchten Sie den Schüler '" & sAusgewaehlterSchueler & "' anrufen?", "Anruf", "Ja", "", "Nein", Null, False)
+			Wait For Msgbox_Result(iResult As Int)
+			If iResult = DialogResponse.POSITIVE Then
+				Try
+					StartActivity(calls.Call(phone))
+				Catch
+					Log("Anruf klappt nicht")
+				End Try
+			End If	
+		Else
+			Log("Keine Berechtigung zum Telefonieren")
+		End If
+	End If
+End Sub
+
+'Stammdaten: Email versenden
+Sub lblStammEmail_Click
+	Dim message As Email
+	Dim mail As String
+	
+	mail = lblStammEmail.Text
+	If mail <> "" Then
+		Msgbox2Async("Möchten Sie eine Email an den Schüler '" & sAusgewaehlterSchueler & "' senden?", "eMail versenden", "Ja", "", "Nein", Null, False)
+		Wait For Msgbox_Result(iResult As Int)
+		If iResult = DialogResponse.POSITIVE Then
+			message.To.Add(mail)
+			StartActivity(message.GetIntent)
+		End If
+	End If
+End Sub
+#End Region 
+
+'Unterschrift zeichnen
+Sub panUnterschriftFeld_Touch (Action As Int, X As Float, Y As Float)
+	SignatureCapture.Panel1_Touch(sigD, X, Y, Action)
+End Sub
+
+#Region Fahrdaten - Sonstige Tätigkeit
+'Fahrdaten: Sonstige Tätigkeiten
+Sub lblSonder_Click
+	SonstigeTaetigkeitenAktiv(bSonstTaetigkeit)
+End Sub
+
+'Fahrdaten: Sonstige Tätigkeiten erfassen
+Sub SonstigeTaetigkeitenAktiv(bTrue As Boolean)
+	Dim iPos As Int
+	
+	If bTrue = False Then
+		bSonstTaetigkeit = True
+		lblSonder.Color = Colors.Red
+		
+		'Überflüssige Label ausblenden/deaktivieren
+		lblKlasse.Visible = False
+		lblAuswahlKlasse.Visible = False
+		lblAuswahlKlasseAlle.Visible = False
+		lblKfz.Visible = False
+		lblAuswahlKfz.Visible = False
+		lblBegleitfahrzeug.Visible = False
+		lblAuswahlBegleitfahrzeug.Visible = False
+		lblTreffpunkt.Visible = False
+		txtAuswahlTreffpunkt.Visible = False
+		lblPfeil.Visible = False
+		btVormerken.Visible = False
+		
+		sFahrtenbezeichnung = lstSonstigeTaetigkeiten.GetItem(SonstigeTaetigkeiten.SonstTaetigkeitSelected)
+		iPos = sFahrtenbezeichnung.IndexOf(" - ")
+		lblAuswahlFahrbezeichnung.Text = sFahrtenbezeichnung.SubString2(0, iPos)
+		
+		If lblAuswahlFahrbezeichnung.Text = "Unt" Then
+			btUnterschrift.Visible = True
+			btSpeichern.Visible = False
+		Else
+			btUnterschrift.Visible = False
+			btSpeichern.Visible = True
+		End If
+		'panUnterschrift.Visible = False
+	Else
+		bSonstTaetigkeit = False
+		lblSonder.Color = Colors.ARGB(255, 211, 211, 211)
+		
+		'Label wieder einblenden
+		lblKlasse.Visible = True
+		lblAuswahlKlasse.Visible = True
+		lblAuswahlKlasseAlle.Visible = True
+		lblKfz.Visible = True
+		lblAuswahlKfz.Visible = True
+		lblBegleitfahrzeug.Visible = True
+		lblAuswahlBegleitfahrzeug.Visible = True
+		lblTreffpunkt.Visible = True
+		txtAuswahlTreffpunkt.Visible = True
+		lblPfeil.Visible = True
+		btVormerken.Visible = True
+		btUnterschrift.Visible = True
+				
+		sFahrtenbezeichnung = lstFahrtbezeichnung.GetItem(Fahrtbezeichnung.FahrtSelected)
+		iPos = sFahrtenbezeichnung.IndexOf(" - ")
+		lblAuswahlFahrbezeichnung.Text = sFahrtenbezeichnung.SubString2(0, iPos)
+		
+		btUnterschriftAbbruch_Click
+	End If
+End Sub
+#End Region 
+
+'Sub CheckDatenSchonVorhanden As Boolean
+'	Dim iResult As Int
+'	Dim bError As Boolean
+'	
+'	'Prüfen, ob Eintrag schon vorhanden ist
+'	If Helper.CheckEintragSchonGespeichert(iTerminID) Then
+'		
+'		iResult = Msgbox2("Eintrag wurde schon gespeichert" & CRLF & CRLF & "Eintrag erneut speichern?" & CRLF & "(vorhandene Unterschrift geht verloren und muss erneut erfasst werden)", "Sicherung", "Ja", "", "Nein", info)
+'		
+'		If iResult = DialogResponse.POSITIVE Then
+'			'ToDo:
+'			'Vorhandenen Termin löschen...
+'			If Helper.TerminLoeschenWennDoppeltGespeichert(iTerminID) Then
+'				'...und als neuen Termin speichern -> wird in btSpeichern_Click Funktion erledigt
+'				bError = False
+'			Else
+'				bError = True
+'			End If
+'		Else
+'			ToastMessageShow("Daten wurden nicht geändert", True)
+'			bError = True
+'		End If
+'	Else
+'		bError = True
+'	End If
+'	
+'	'Rückgabewert setzen
+'	If bError Then
+'		bDatenVorhanden = True
+'		Return False
+'	Else
+'		bDatenVorhanden = False
+'		Return True
+'	End If
+'End Sub
